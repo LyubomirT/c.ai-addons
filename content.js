@@ -1,12 +1,11 @@
 // content.js for character.ai
 
-
-
 function initMemoryManager() {
   if (localStorage.getItem("memoryManagerEnabled") === "true") {
     // create a fixed sidebar on the right
     var sidebar = document.createElement("div");
     var screenWidth = window.innerWidth;
+    var userName;
     sidebar.id = "memory-manager";
     sidebar.style.position = "fixed";
     sidebar.style.overflow = "auto";
@@ -251,6 +250,53 @@ function initMemoryManager() {
       document.getElementById("memory-display").value = memoryString;
     }
 
+    function importMemoryString(memoryString) {
+      var characterMemorySelect = document.getElementById(
+        "character-memory-select"
+      );
+      var userMemorySelect = document.getElementById("user-memory-select");
+
+      // Clear existing memory options
+      characterMemorySelect.innerHTML =
+        '<option value="" disabled selected>--Select a memory--</option>';
+      userMemorySelect.innerHTML =
+        '<option value="" disabled selected>--Select a memory--</option>';
+
+      // Split memoryString by newlines
+      var memoryLines = memoryString.split("\n");
+
+      memoryLines.forEach(function (memoryLine) {
+        // Trim whitespace and check for AI memories or User Facts keywords
+        var cleanedLine = memoryLine.trim();
+
+        if (cleanedLine.startsWith("[ AI memories:")) {
+          var memories = cleanedLine.match(/"([^"]*)"/g);
+          if (memories) {
+            memories.forEach(function (memory) {
+              var cleanedMemory = memory.slice(1, -1); // Remove the surrounding double quotes
+              var newOption = document.createElement("option");
+              newOption.value = cleanedMemory;
+              newOption.textContent = cleanedMemory;
+              characterMemorySelect.appendChild(newOption);
+            });
+          }
+        } else if (cleanedLine.startsWith("[ User Facts:")) {
+          var memories = cleanedLine.match(/"([^"]*)"/g);
+          if (memories) {
+            memories.forEach(function (memory) {
+              var cleanedMemory = memory.slice(1, -1); // Remove the surrounding double quotes
+              var newOption = document.createElement("option");
+              newOption.value = cleanedMemory;
+              newOption.textContent = cleanedMemory;
+              userMemorySelect.appendChild(newOption);
+            });
+          }
+        }
+      });
+
+      updateMemoryString(); // Update the displayed memory string
+    }
+
     // create a function to insert the memory string to the user input textarea
     function insertMemoryString() {
       // get the user input textarea element
@@ -293,7 +339,7 @@ width: 100%;
 }
 
 #memory-manager-form input[type="submit"] {
-width: 50%;
+width: 80%;
 margin-top: 20px;
 padding: 10px;
 border: none;
@@ -306,8 +352,8 @@ color: white;
 
     var DIVFORTHEINSERTBUTTON = document.createElement("div");
     DIVFORTHEINSERTBUTTON.style.display = "flex";
-    DIVFORTHEINSERTBUTTON.style.justifyContent = "center";
-    DIVFORTHEINSERTBUTTON.style.alignItems = "center";
+    DIVFORTHEINSERTBUTTON.style.flexDirection = "column"; // To vertically center
+    DIVFORTHEINSERTBUTTON.style.alignItems = "center"; // To horizontally center
     sidebar.appendChild(DIVFORTHEINSERTBUTTON);
 
     // create a button element for inserting memory string
@@ -318,12 +364,391 @@ color: white;
     insertButton.style.padding = "10px";
     insertButton.style.borderRadius = "5px";
     insertButton.style.border = "none";
-    insertButton.marginTop = "30px !important";
-    insertButton.width = "80%";
+    insertButton.style.marginTop = "30px !important";
+    insertButton.style.width = "80%";
     insertButton.addEventListener("click", function () {
       insertMemoryString();
     });
     DIVFORTHEINSERTBUTTON.appendChild(insertButton);
+    // create a button element for importing memory string
+    var importButton = document.createElement("button");
+    importButton.innerText = "Import Memory String";
+    importButton.style.backgroundImage =
+      "linear-gradient(to right, #00c6ff, #0072ff)";
+    importButton.style.padding = "10px";
+    importButton.style.justifyContent = "center";
+    importButton.style.alignItems = "center";
+    importButton.style.borderRadius = "5px";
+    importButton.style.border = "none";
+    importButton.style.marginTop = "10px";
+    importButton.style.width = "80%";
+    importButton.addEventListener("click", function () {
+      openImportDialog();
+    });
+    DIVFORTHEINSERTBUTTON.appendChild(importButton);
+
+    // Add a "Scan" button to trigger the message scanning process
+    var scanButton = document.createElement("button");
+    scanButton.id = "scan-button";
+    scanButton.textContent = "Generate Automatically";
+    scanButton.style.backgroundImage =
+      "linear-gradient(to right, #00c6ff, #0072ff)";
+    scanButton.style.padding = "10px";
+    scanButton.style.borderRadius = "5px";
+    scanButton.style.border = "none";
+    scanButton.style.marginTop = "10px";
+    scanButton.style.width = "80%";
+    scanButton.style.color = "white";
+    scanButton.style.cursor = "pointer";
+    scanButton.addEventListener("click", scanMessages);
+    DIVFORTHEINSERTBUTTON.appendChild(scanButton);
+
+    // Add a new select element for choosing which model to use for auto-scanning
+    var modelSelect = document.createElement("select");
+    modelSelect.id = "model-select";
+    modelSelect.style.borderRadius = "5px";
+    modelSelect.style.marginTop = "10px";
+    modelSelect.style.padding = "10px";
+    modelSelect.style.width = "80%";
+
+    var currentlySelectedModel = "command";
+
+    // Add options to the select element
+    modelSelect.innerHTML = `<option value="command">Normal (Higher Quality, Slower)</option><option value="command-light">Fast (Lower Quality, Faster)</option>`;
+
+    modelSelect.addEventListener("change", function () {
+      currentlySelectedModel = modelSelect.value;
+    })
+    DIVFORTHEINSERTBUTTON.appendChild(modelSelect);
+    
+    function convertToMemoryString(obj) {
+      // Extract the summary from the object
+      var summary = obj.summary;
+    
+      // Split the summary into individual lines
+      var lines = summary.split("\n");
+    
+      // Initialize an array to store the formatted lines
+      var formattedLines = [];
+    
+      // Iterate through each line
+      lines.forEach(function (line) {
+        // Remove the leading dash and any whitespace characters
+        line = line.replace(/^-/, "").trim();
+    
+        // Add the line to the formattedLines array, enclosed in double quotes
+        formattedLines.push(`"${line}"`);
+      });
+    
+      // Join the formatted lines with a semicolon separator
+      var memoryString = `[ AI memories: ${formattedLines.join("; ")} ]`;
+    
+      // Return the resulting memory string
+      return memoryString;
+    }
+    
+
+    // Function to scan and summarize messages
+    async function scanMessages() {
+
+      scanButton.textContent = "Scanning... (Might take a while)";
+      scanButton.disabled = true;
+      // Check if the window.location.href contains "chat2"
+      if (window.location.href.includes("chat2")) {
+        scanChat2Messages();
+        return
+      }
+      // Get all message divs
+      var authorNameElement = document.querySelector(".msg-author-name");
+      
+      // Check if the element exists and contains text
+      if (authorNameElement) {
+        var userName = authorNameElement.textContent;
+        console.log("User's name:", userName);
+      } else {
+        var userName = "Anonymous";
+        console.log("Author name element not found.");
+      }
+    
+      // Get the element with the class "chattitle p-0 pe-1 m-0"
+      var chatTitleElement = document.querySelector(".chattitle.p-0.pe-1.m-0");
+      var chatTitle;
+    
+      // Check if the element exists and contains text
+      if (chatTitleElement) {
+        var chatTitle = Array.from(chatTitleElement.childNodes)
+        .filter(node => node.nodeType === Node.TEXT_NODE)
+        .map(node => node.textContent)
+        .join('')
+        .trim();
+        console.log("Chat title:", chatTitle);
+      } else {
+        var chatTitle = "Unknown";
+        console.log("Chat title element not found.");
+      }
+    
+      var messageDivs = document.querySelectorAll(
+        ".msg.char-msg, .msg.user-msg"
+      );
+    
+      // Initialize arrays to store character and user messages
+      var characterMessages = [];
+      var userMessages = [];
+    
+      // Iterate through each message div
+      messageDivs.forEach(function (messageDiv) {
+        // Find the <p> elements inside the message div
+        var messageParagraphs = messageDiv.querySelectorAll(
+          "div > div > div > p"
+        );
+    
+        // Extract and store the text content of each <p> element
+        var messageText = Array.from(messageParagraphs)
+          .map(function (paragraph) {
+            return paragraph.textContent.trim();
+          })
+          .join("\n"); // Combine multiple paragraphs into a single message
+    
+        // Check if the message is from the character or user
+        if (messageDiv.classList.contains("char-msg")) {
+          characterMessages.push(messageText);
+        } else {
+          userMessages.push(messageText);
+        }
+      });
+    
+      // Organize the messages as alternating character-user-character-user and so on
+      var organizedMessages = [];
+      var maxLength = Math.max(characterMessages.length, userMessages.length);
+      for (var i = 0; i < maxLength; i++) {
+        if (characterMessages[i]) {
+          organizedMessages.push(`<<Character (Character Name = ${chatTitle}) Message Start>>\n\n${characterMessages[i]}\n\n<<Character Message End>>`);
+        }
+        if (userMessages[i]) {
+          organizedMessages.push(`<<User (User Name = ${userName}) Message Start>>\n\n${userMessages[i]}\n\n<<User Message End>>`);
+        }
+      }
+    
+      // Display the summarized messages
+      var summaryText = organizedMessages.join("\n\n");
+
+      console.log(summaryText);
+
+      // Check if the summaryText is less than 500 characters long
+      if (summaryText.length < 500) {
+        alert("The chat is too short to scan.");
+        scanButton.textContent = "Generate Automatically";
+        scanButton.disabled = false;
+        return;
+      }
+      
+      // Send a request to the API using fetch method
+      const response = await fetch('https://api.cohere.ai/v1/summarize', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer npknXHWGCEpBMB87M5KEYZJFpeZB4uKoSN7pQXSj',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            text: summaryText,
+            length: 'auto',
+            format: 'bullets',
+            model: currentlySelectedModel,
+            additional_command: 'Extract facts and events from the conversation.',
+            temperature: 0.6
+          })
+       });
+       scanButton.textContent = "Generate Automatically";
+       scanButton.disabled = false;
+       if (!response.ok) {
+        alert("Something went wrong. Please try again.");
+        return
+       }
+       const data = await response.json();
+       var summary = "";
+       summary = convertToMemoryString(data);
+       importMemoryString(summary);
+       console.log(data);
+    }
+
+    async function scanChat2Messages() {
+      // Get the character name
+      scanButton.textContent = "Scanning... (Might take a while)";
+      scanButton.disabled = true;
+      var characterNameElement = document.querySelector(".chat2 > div > div > button + div > div > div:first-child");
+      var characterName = characterNameElement ? characterNameElement.textContent : "Unknown Character";
+    
+      // Get all message divs
+      var messageDivs = document.querySelectorAll(".swiper-no-swiping");
+    
+      // Initialize arrays to store character and user messages
+      var characterMessages = [];
+      var userMessages = [];
+      var userNames = [];
+    
+      // Iterate through each message div
+      messageDivs.forEach(function (messageDiv, index) {
+        // Ignore messages that are not in the active slide
+        var parentSlide = messageDiv.closest(".swiper-slide");
+        if (parentSlide && !parentSlide.classList.contains("swiper-slide-active")) {
+          return;
+        }
+    
+        // Find the <p> elements inside the message div
+        var messageParagraphs = messageDiv.querySelectorAll("p");
+    
+        // Extract and store the text content of each <p> element
+        var messageText = Array.from(messageParagraphs)
+          .map(function (paragraph) {
+            return paragraph.textContent.trim();
+          })
+          .join("\n");
+    
+        // Determine if the message is from the character or user
+        if (index % 2 === 0) {
+          characterMessages.push(messageText);
+        } else {
+          userMessages.push(messageText);
+
+          if (parentSlide && parentSlide.classList.contains("swiper-slide-active")) {
+            characterMessages.push(messageText);
+          } else {
+                // Get the sibling div which contains the username
+                var userNameDiv = messageDiv.previousElementSibling;
+                if (userNameDiv) {
+                  userNames.push(userNameDiv.textContent.trim());
+                } else {
+                  userNames.push("Unknown User");
+                }
+          }
+        }
+      });
+    
+      // Combine character and user messages
+      var organizedMessages = [];
+      for (var i = 0; i < characterMessages.length || i < userMessages.length; i++) {
+        if (characterMessages[i]) {
+          organizedMessages.push(`<<Character (Character Name = ${characterName}) Message Start>>\n\n${characterMessages[i]}\n\n<<Character Message End>>`);
+        }
+        if (userMessages[i]) {
+          organizedMessages.push(`<<User (User Name = ${userNames[i]}) Message Start>>\n\n${userMessages[i]}\n\n<<User Message End>>`);
+        }
+      }
+    
+      // Display the summarized messages
+      var summaryText = organizedMessages.join("\n\n");
+    
+      console.log(summaryText);
+    
+      // Check if the summaryText is less than 500 characters long
+      if (summaryText.length < 500) {
+        alert("The chat is too short to scan.");
+        scanButton.disabled = false;
+        scanButton.textContent = "Generate Automatically";
+        return;
+      }
+    
+      // Send a request to the API using fetch method
+      const response = await fetch('https://api.cohere.ai/v1/summarize', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer npknXHWGCEpBMB87M5KEYZJFpeZB4uKoSN7pQXSj',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: summaryText,
+          length: 'auto',
+          format: 'bullets',
+          model: currentlySelectedModel,
+          additional_command: 'Extract facts and events from the conversation.',
+          temperature: 0.6
+        })
+      });
+      scanButton.textContent = "Generate Automatically";
+      scanButton.disabled = false;
+      if (!response.ok) {
+        alert("Something went wrong. Please try again.");
+        return
+      }
+    
+      const data = await response.json();
+      var summary = "";
+      summary = convertToMemoryString(data);
+      importMemoryString(summary);
+      console.log(data);
+    }
+    
+    
+    
+    
+
+    function openImportDialog() {
+      var importDialog = document.createElement("div");
+      importDialog.id = "import-dialog";
+      importDialog.style.position = "fixed";
+      importDialog.style.left = "50%";
+      importDialog.style.top = "50%";
+      importDialog.style.transform = "translate(-50%, -50%)";
+      importDialog.style.backgroundColor = "white";
+      importDialog.style.padding = "20px";
+      importDialog.style.borderRadius = "5px";
+      importDialog.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.2)";
+
+      var textarea = document.createElement("textarea");
+      textarea.style.width = "100%";
+      textarea.style.height = "100px";
+      textarea.placeholder = "Paste your memory string here...";
+      importDialog.appendChild(textarea);
+
+      var confirmButton = document.createElement("button");
+      confirmButton.innerText = "Confirm";
+      confirmButton.style.marginTop = "10px";
+      confirmButton.style.backgroundImage =
+        "linear-gradient(to right, #00c6ff, #0072ff)";
+      confirmButton.style.padding = "5px 10px";
+      confirmButton.style.borderRadius = "5px";
+      confirmButton.style.border = "none";
+      confirmButton.style.color = "white";
+      confirmButton.style.cursor = "pointer";
+      confirmButton.addEventListener("click", function () {
+        var importedMemoryString = textarea.value;
+
+        if (isValidMemoryString(importedMemoryString)) {
+          importMemoryString(importedMemoryString);
+          sidebar.removeChild(importDialog);
+        } else {
+          alert(
+            "Invalid memory string format. Please provide a valid memory string."
+          );
+        }
+      });
+      importDialog.appendChild(confirmButton);
+
+      var cancelButton = document.createElement("button");
+      cancelButton.innerText = "Cancel";
+      cancelButton.style.marginTop = "10px";
+      cancelButton.style.backgroundImage =
+        "linear-gradient(to right, #ff0000, #ff6666)";
+      cancelButton.style.padding = "5px 10px";
+      cancelButton.style.borderRadius = "5px";
+      cancelButton.style.border = "none";
+      cancelButton.style.color = "white";
+      cancelButton.style.cursor = "pointer";
+      cancelButton.addEventListener("click", function () {
+        sidebar.removeChild(importDialog);
+      });
+      importDialog.appendChild(cancelButton);
+
+      sidebar.appendChild(importDialog);
+    }
+
+    // Function to validate the imported memory string format
+    function isValidMemoryString(memoryString) {
+      // Modify this regex pattern according to the expected format
+      var regexPattern =
+        /^\[ AI memories: "[^"]*(?:";\s*"[^"]*)*" ](?:\n\[ User Facts: "[^"]*(?:";\s*"[^"]*)*" ])?$/;
+      return regexPattern.test(memoryString);
+    }
   }
 }
 
@@ -340,48 +765,46 @@ function updateSidebarWidth() {
       sidebar.style.zIndex = 15000;
     }
     fixedField.style.display = "block";
-    fixedField.style.position = 'relative';
+    fixedField.style.position = "relative";
     fixedField.style.marginBottom = "200px";
     fixedField.style.width = "100%";
     fixedField.style.left = "0";
     // Move fixedField to below the #root div
     document.body.insertAdjacentElement("beforeend", fixedField);
   } else {
-    if (sidebar)
-    {
+    if (sidebar) {
       sidebar.style.width = "25%";
       toggleButton.style.top = "10px";
       sidebar.style.zIndex = 999;
     }
-    fixedField.style.position = 'absolute';
+    fixedField.style.position = "fixed";
     fixedField.style.marginBottom = "0";
     fixedField.style.width = "115px";
     fixedField.style.left = "20px";
 
     // Move fixedField to above the #root div
     document.body.insertAdjacentElement("afterbegin", fixedField);
-
   }
 }
 
 // Add an event listener to the window's resize event
 window.addEventListener("resize", updateSidebarWidth);
 
-
 function toggleRoundedAvatars() {
-  const roundedAvatarsEnabled = localStorage.getItem("roundedAvatars") === "true";
+  const roundedAvatarsEnabled =
+    localStorage.getItem("roundedAvatars") === "true";
   const images = document.querySelectorAll("img");
 
   function applyRoundedStyle(image) {
     image.style.borderRadius = roundedAvatarsEnabled ? "0" : "45px";
   }
 
-  images.forEach(image => {
+  images.forEach((image) => {
     if (image.src.includes("https://characterai.io/i/80/static/avatars/")) {
       if (image.complete) {
         applyRoundedStyle(image);
       } else {
-        image.onload = function() {
+        image.onload = function () {
           applyRoundedStyle(image);
         };
       }
@@ -390,7 +813,7 @@ function toggleRoundedAvatars() {
 }
 
 // Observe mutations in the document to handle dynamically loaded content
-const observer = new MutationObserver(function(mutationsList) {
+const observer = new MutationObserver(function (mutationsList) {
   for (const mutation of mutationsList) {
     if (mutation.type === "childList") {
       toggleRoundedAvatars(); // Call your function whenever the DOM changes
@@ -404,12 +827,11 @@ observer.observe(document.body, { childList: true, subtree: true });
 // Initial call to apply rounded avatars to existing images
 toggleRoundedAvatars();
 
-
 // create a fixed field in the bottom-left corner
 var screenWidth = window.innerWidth;
 var fixedField = document.createElement("div");
 fixedField.id = "fixed-field";
-fixedField.style.position = screenWidth <= 960 ? "relative" : "absolute";
+fixedField.style.position = screenWidth <= 960 ? "relative" : "fixed";
 fixedField.style.left = screenWidth <= 960 ? "0" : "20px";
 fixedField.style.bottom = "20px";
 fixedField.style.width = screenWidth <= 960 ? "100%" : "115px";
@@ -555,13 +977,14 @@ if (
 
 // Check and set initial state from localStorage
 var initialRoundedAvatarsState = localStorage.getItem("roundedAvatars");
-if (initialRoundedAvatarsState === "false" || initialRoundedAvatarsState === null) {
-  
+if (
+  initialRoundedAvatarsState === "false" ||
+  initialRoundedAvatarsState === null
+) {
   roundedAvatarsToggle.checked = false;
 } else {
   roundedAvatarsToggle.checked = true;
 }
-
 
 initMemoryManager();
 
@@ -590,85 +1013,87 @@ setTimeout(function () {
 });
 
 function initLegacy() {
-// Create a button for the New Legacy Chat
-const newLegacyChatButton = document.createElement("button");
-newLegacyChatButton.id = "new-legacy-chat-button";
-newLegacyChatButton.textContent = "↻";
-newLegacyChatButton.style.borderRadius = "50%";
-newLegacyChatButton.style.fontSize = "20px";
-newLegacyChatButton.style.margin = "0";
-newLegacyChatButton.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.2)";
-newLegacyChatButton.style.width = "40px";
-newLegacyChatButton.style.height = "40px";
-newLegacyChatButton.style.color = "#333";
-newLegacyChatButton.style.padding = "5px 10px";
-newLegacyChatButton.style.backgroundColor = "#e0e0e0";
-newLegacyChatButton.style.color = "white";
-newLegacyChatButton.style.border = "none";
-newLegacyChatButton.style.cursor = "pointer";
-newLegacyChatButton.style.zIndex = "9997";
-newLegacyChatButton.style.marginLeft = "10px";
-newLegacyChatButton.style.transition = "all 0.3s ease-in-out";
-
-newLegacyChatButton.addEventListener("mouseenter", function () {
-  newLegacyChatButton.style.backgroundColor = "#ccc";
-  newLegacyChatButton.style.color = "#000";
-});
-
-newLegacyChatButton.addEventListener("mouseleave", function () {
-  newLegacyChatButton.style.backgroundColor = "#e0e0e0";
+  // Create a button for the New Legacy Chat
+  const newLegacyChatButton = document.createElement("button");
+  newLegacyChatButton.id = "new-legacy-chat-button";
+  newLegacyChatButton.textContent = "↻";
+  newLegacyChatButton.style.borderRadius = "50%";
+  newLegacyChatButton.style.fontSize = "20px";
+  newLegacyChatButton.style.margin = "0";
+  newLegacyChatButton.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.2)";
+  newLegacyChatButton.style.width = "40px";
+  newLegacyChatButton.style.height = "40px";
   newLegacyChatButton.style.color = "#333";
-});
+  newLegacyChatButton.style.padding = "5px 10px";
+  newLegacyChatButton.style.backgroundColor = "#e0e0e0";
+  newLegacyChatButton.style.color = "white";
+  newLegacyChatButton.style.border = "none";
+  newLegacyChatButton.style.cursor = "pointer";
+  newLegacyChatButton.style.zIndex = "9997";
+  newLegacyChatButton.style.marginLeft = "10px";
+  newLegacyChatButton.style.transition = "all 0.3s ease-in-out";
 
-newLegacyChatButton.addEventListener("click", async function () {
-  const n = new URLSearchParams(window.location.search).get("char");
-  if (!n) {
-    alert("You are not on a character page!");
-    return;
-  }
+  newLegacyChatButton.addEventListener("mouseenter", function () {
+    newLegacyChatButton.style.backgroundColor = "#ccc";
+    newLegacyChatButton.style.color = "#000";
+  });
 
-  const o = localStorage.getItem("char_token");
-  if (!o) {
-    alert("You are not logged in!");
-    return;
-  }
+  newLegacyChatButton.addEventListener("mouseleave", function () {
+    newLegacyChatButton.style.backgroundColor = "#e0e0e0";
+    newLegacyChatButton.style.color = "#333";
+  });
 
-  const a = JSON.parse(o).value;
-  if (!a) {
-    alert("You are not logged in!");
-    return;
-  }
-
-  try {
-    const e = await fetch("https://beta.character.ai/chat/history/create/", {
-      method: "POST",
-      body: JSON.stringify({ character_external_id: n }),
-      credentials: "same-origin",
-      headers: {
-        Authorization: `Token ${a}`,
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      }
-    });
-
-    const responseData = await e.json();
-    const r = responseData.external_id;
-
-    if (!r) {
-      alert("Unexpected response from Character.AI. Check the console for more info.");
-      console.warn("Unexpected response from Character.AI", responseData);
+  newLegacyChatButton.addEventListener("click", async function () {
+    const n = new URLSearchParams(window.location.search).get("char");
+    if (!n) {
+      alert("You are not on a character page!");
       return;
     }
 
-    window.location.href = `https://beta.character.ai/chat?char=${n}&hist=${r}`;
-  } catch (error) {
-    alert("Failed to create a new chat using the legacy API. Check the console for more info.");
-    console.error("Failed to create a new chat using the legacy API.", error);
-  }
-});
+    const o = localStorage.getItem("char_token");
+    if (!o) {
+      alert("You are not logged in!");
+      return;
+    }
 
+    const a = JSON.parse(o).value;
+    if (!a) {
+      alert("You are not logged in!");
+      return;
+    }
 
+    try {
+      const e = await fetch("https://beta.character.ai/chat/history/create/", {
+        method: "POST",
+        body: JSON.stringify({ character_external_id: n }),
+        credentials: "same-origin",
+        headers: {
+          Authorization: `Token ${a}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
 
-// Append the New Legacy Chat button to the document body
-fixedField.appendChild(newLegacyChatButton);
+      const responseData = await e.json();
+      const r = responseData.external_id;
+
+      if (!r) {
+        alert(
+          "Unexpected response from Character.AI. Check the console for more info."
+        );
+        console.warn("Unexpected response from Character.AI", responseData);
+        return;
+      }
+
+      window.location.href = `https://beta.character.ai/chat?char=${n}&hist=${r}`;
+    } catch (error) {
+      alert(
+        "Failed to create a new chat using the legacy API. Check the console for more info."
+      );
+      console.error("Failed to create a new chat using the legacy API.", error);
+    }
+  });
+
+  // Append the New Legacy Chat button to the document body
+  fixedField.appendChild(newLegacyChatButton);
 }
