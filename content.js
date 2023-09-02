@@ -1,4 +1,5 @@
 // content.js for character.ai
+var caughtOne = false;
 
 function initMemoryManager() {
   if (localStorage.getItem("memoryManagerEnabled") === "true") {
@@ -447,6 +448,7 @@ color: white;
       return memoryString;
     }
     
+    
 
     // Function to scan and summarize messages
     async function scanMessages() {
@@ -497,18 +499,73 @@ color: white;
     
       // Iterate through each message div
       messageDivs.forEach(function (messageDiv) {
+        var parentSlide = messageDiv.closest(".swiper-slide");
+        if (parentSlide && !parentSlide.classList.contains("swiper-slide-active") || caughtOne) {
+          return;
+        }
+
         // Find the <p> elements inside the message div
-        var messageParagraphs = messageDiv.querySelectorAll(
-          "div > div > div > p"
-        );
-    
+        var messageParagraphs = messageDiv.querySelectorAll("div > div > div > p");
+        var messageBlockquotes = messageDiv.querySelectorAll("div > div > div > blockquote > p");
+        var messageInlineCodes = messageDiv.querySelectorAll("div > div > div > p > div > div > code > span > span");
+        var messageUls = messageDiv.querySelectorAll("ul");
+
         // Extract and store the text content of each <p> element
-        var messageText = Array.from(messageParagraphs)
-          .map(function (paragraph) {
-            return paragraph.textContent.trim();
-          })
-          .join("\n"); // Combine multiple paragraphs into a single message
-    
+        var messageText = Array.from(messageParagraphs).map(function (paragraph) {
+          // Handle special elements inside the message
+          var specialElements = messageDiv.querySelectorAll("ul, ol, pre, blockquote, code");
+          if (specialElements.length > 0) {
+            return Array.from(specialElements).map(function (element) {
+              if (element.tagName == "CODE") {
+                return element.textContent;
+              }
+              else if (element.tagName == "BLOCKQUOTE") {
+                console.log(element.childNodes[0].innerText);
+                return element.childNodes[0].innerText;
+              }
+            }).join("\n");
+          } else {
+            return paragraph.innerHTML;
+          }
+        }).join("\n");
+
+        // Handle blockquotes
+        if (messageBlockquotes.length > 0) {
+          for (var i = 0; i < messageBlockquotes.length; i++) {
+            messageText += "> " + messageBlockquotes[i].textContent + "\n";
+          }
+        }
+
+        // Handle inline codes
+        if (messageInlineCodes.length > 0) {
+          for (var i = 0; i < messageInlineCodes.length; i++) {
+            messageText += "`" + messageInlineCodes[i].textContent + "`";
+          }
+        }
+
+        // Handle lists
+        if (messageUls.length > 0) {
+          for (var i = 0; i < messageUls.length; i++) {
+            console.log('List:', messageUls[i]); // Debugging line
+            for (var j = 0; j < messageUls[i].childNodes.length; j++) {
+              console.log('List Item:', messageUls[i].childNodes[j]); // Debugging line
+              if (messageUls[i].childNodes[j].nodeType === 1) {
+                // Check if it's an element node
+                messageText += "- " + messageUls[i].childNodes[j].textContent.trim() + "\n";
+              }
+            }
+          }
+        }
+
+        messageText = messageText.replace("<strong>", "**").replace("</strong>", "**");
+        messageText = messageText.replace("<em>", "*").replace("</em>", "*");
+        messageText = messageText.replace("<h1>", "# ").replace("</h1>", "#" );
+        messageText = messageText.replace("<h2>", "## ").replace("</h2>", "## ");
+        messageText = messageText.replace("<h3>", "### ").replace("</h3>", "### ");
+        messageText = messageText.replace("<h4>", "#### ").replace("</h4>", "#### ");
+        messageText = messageText.replace("<h5>", "##### ").replace("</h5>", "##### ");
+        messageText = messageText.replace("<h6>", "###### ").replace("</h6>", "###### ");
+
         // Check if the message is from the character or user
         if (messageDiv.classList.contains("char-msg")) {
           characterMessages.push(messageText);
@@ -554,7 +611,7 @@ color: white;
             length: 'auto',
             format: 'bullets',
             model: currentlySelectedModel,
-            additional_command: 'Extract facts and events from the conversation.',
+            additional_command: 'Extract facts and events from the conversation. Do not make up any information.',
             temperature: 0.6
           })
        });
@@ -572,6 +629,11 @@ color: white;
     }
 
     async function scanChat2Messages() {
+
+      if (screenWidth <= 960) {
+        scanChat3Messages();
+        return;
+      }
       // Get the character name
       scanButton.textContent = "Scanning... (Might take a while)";
       scanButton.disabled = true;
@@ -590,39 +652,99 @@ color: white;
       messageDivs.forEach(function (messageDiv, index) {
         // Ignore messages that are not in the active slide
         var parentSlide = messageDiv.closest(".swiper-slide");
-        if (parentSlide && !parentSlide.classList.contains("swiper-slide-active")) {
+        if (parentSlide && !parentSlide.classList.contains("swiper-slide-active") || caughtOne) {
           return;
         }
-    
+
+        if (parentSlide && parentSlide.classList.contains("swiper-slide-active")) {
+          caughtOne = true;
+        }
+        
         // Find the <p> elements inside the message div
         var messageParagraphs = messageDiv.querySelectorAll("p");
-    
+        var messageBlockquotes = messageDiv.querySelectorAll("blockquote > p");
+        var messageInlineCodes = messageDiv.querySelectorAll("code");
+        var messageUls = messageDiv.querySelectorAll("ul, ol");
+        
         // Extract and store the text content of each <p> element
-        var messageText = Array.from(messageParagraphs)
-          .map(function (paragraph) {
-            return paragraph.textContent.trim();
-          })
-          .join("\n");
-    
+        var messageText = Array.from(messageParagraphs).map(function (paragraph) {
+          // Handle special elements inside the message
+          var specialElements = messageDiv.querySelectorAll("ul, ol, pre, blockquote, code");
+          if (specialElements.length > 0) {
+            return Array.from(specialElements).map(function (element) {
+              if (element.type == "code") {
+                return element.textContent;
+              }
+              else if (element.type == "blockquote") {
+                console.log(element.childNodes[0].innerText);
+                return element.childNodes[0].innerText;
+              }
+              return element.textContent;
+            }).join("\n");
+          } else {
+            return paragraph.innerHTML;
+          }
+        }).join("\n");
+
+        // Handle blockquotes
+        if (messageBlockquotes.length > 0) {
+          for (var i = 0; i < messageBlockquotes.length; i++) {
+            messageText += "> " + messageBlockquotes[i].textContent + "\n";
+          }
+        }
+
+        // Handle inline codes
+        if (messageInlineCodes.length > 0) {
+          for (var i = 0; i < messageInlineCodes.length; i++) {
+            messageText += "`" + messageInlineCodes[i].textContent + "`";
+          }
+        }
+
+        // Handle lists
+        if (messageUls.length > 0) {
+          for (var i = 0; i < messageUls.length; i++) {
+            console.log('List:', messageUls[i]); // Debugging line
+            for (var j = 0; j < messageUls[i].childNodes.length; j++) {
+              console.log('List Item:', messageUls[i].childNodes[j]); // Debugging line
+              if (messageUls[i].childNodes[j].nodeType === 1) {
+                // Check if it's an element node
+                messageText += "- " + messageUls[i].childNodes[j].textContent.trim() + "\n";
+              }
+            }
+          }
+        }
+
+        messageText = messageText.replace("<strong>", "**").replace("</strong>", "**");
+        messageText = messageText.replace("<em>", "*").replace("</em>", "*");
+        messageText = messageText.replace("<h1>", "# ").replace("</h1>", "#" );
+        messageText = messageText.replace("<h2>", "## ").replace("</h2>", "## ");
+        messageText = messageText.replace("<h3>", "### ").replace("</h3>", "### ");
+        messageText = messageText.replace("<h4>", "#### ").replace("</h4>", "#### ");
+        messageText = messageText.replace("<h5>", "##### ").replace("</h5>", "##### ");
+        messageText = messageText.replace("<h6>", "###### ").replace("</h6>", "###### ");
+        
         // Determine if the message is from the character or user
         if (index % 2 === 0) {
           characterMessages.push(messageText);
         } else {
-          userMessages.push(messageText);
-
           if (parentSlide && parentSlide.classList.contains("swiper-slide-active")) {
             characterMessages.push(messageText);
           } else {
-                // Get the sibling div which contains the username
-                var userNameDiv = messageDiv.previousElementSibling;
-                if (userNameDiv) {
-                  userNames.push(userNameDiv.textContent.trim());
-                } else {
-                  userNames.push("Unknown User");
-                }
+            // Get the sibling div which contains the username
+            var userNameDiv = messageDiv.previousElementSibling;
+            if (userNameDiv) {
+              userNames.push(userNameDiv.textContent.trim());
+            } else {
+              userNames.push("Unknown User");
+            }
+            userMessages.push(messageText);
           }
         }
       });
+
+      caughtOne = false;
+
+      console.log(characterName);
     
       // Combine character and user messages
       var organizedMessages = [];
@@ -660,7 +782,169 @@ color: white;
           length: 'auto',
           format: 'bullets',
           model: currentlySelectedModel,
-          additional_command: 'Extract facts and events from the conversation.',
+          additional_command: 'Extract facts and events from the conversation. Do not make up any information.',
+          temperature: 0.6
+        })
+      });
+      scanButton.textContent = "Generate Automatically";
+      scanButton.disabled = false;
+      if (!response.ok) {
+        alert("Something went wrong. Please try again.");
+        return
+      }
+    
+      const data = await response.json();
+      var summary = "";
+      summary = convertToMemoryString(data);
+      importMemoryString(summary);
+      console.log(data);
+    }
+
+    async function scanChat3Messages() {
+      // Get the character name
+      scanButton.textContent = "Scanning... (Might take a while)";
+      scanButton.disabled = true;
+      var characterNameElement = document.querySelector(".chat2 > div > div > button + div > div > div:first-child");
+      var characterName = characterNameElement ? characterNameElement.textContent : "Unknown Character";
+    
+      // Get all message divs
+      var messageDivs = document.querySelectorAll('div[class=""]');
+    
+      // Initialize arrays to store character and user messages
+      var characterMessages = [];
+      var userMessages = [];
+      var userNames = [];
+    
+      // Iterate through each message div
+      messageDivs.forEach(function (messageDiv, index) {
+        // Ignore messages that are not in the active slide
+        var parentSlide = messageDiv.closest(".swiper-slide");
+        if (parentSlide && !parentSlide.classList.contains("swiper-slide-active") || caughtOne) {
+          return;
+        }
+
+        if (parentSlide && parentSlide.classList.contains("swiper-slide-active")) {
+          caughtOne = true;
+        }
+        
+        // Find the <p> elements inside the message div
+        var messageParagraphs = messageDiv.querySelectorAll("p");
+        var messageBlockquotes = messageDiv.querySelectorAll("blockquote > p");
+        var messageInlineCodes = messageDiv.querySelectorAll("code");
+        var messageUls = messageDiv.querySelectorAll("ul, ol");
+        
+        
+        // Extract and store the text content of each <p> element
+        var messageText = Array.from(messageParagraphs).map(function (paragraph) {
+          // Handle special elements inside the message
+          var specialElements = messageDiv.querySelectorAll("ul, ol, pre, blockquote, code");
+          if (specialElements.length > 0) {
+            return Array.from(specialElements).map(function (element) {
+              return element.textContent;
+            }).join("\n");
+          } else {
+            return paragraph.innerHTML;
+          }
+        }).join("\n");
+
+        // Handle blockquotes
+        if (messageBlockquotes.length > 0) {
+          for (var i = 0; i < messageBlockquotes.length; i++) {
+            messageText += "> " + messageBlockquotes[i].textContent + "\n";
+          }
+        }
+
+        // Handle inline codes
+        if (messageInlineCodes.length > 0) {
+          for (var i = 0; i < messageInlineCodes.length; i++) {
+            messageText += "`" + messageInlineCodes[i].textContent + "`";
+          }
+        }
+
+        // Handle lists
+        if (messageUls.length > 0) {
+          for (var i = 0; i < messageUls.length; i++) {
+            console.log('List:', messageUls[i]); // Debugging line
+            for (var j = 0; j < messageUls[i].childNodes.length; j++) {
+              console.log('List Item:', messageUls[i].childNodes[j]); // Debugging line
+              if (messageUls[i].childNodes[j].nodeType === 1) {
+                // Check if it's an element node
+                messageText += "- " + messageUls[i].childNodes[j].textContent.trim() + "\n";
+              }
+            }
+          }
+        }
+
+        messageText = messageText.replace("<strong>", "**").replace("</strong>", "**");
+        messageText = messageText.replace("<em>", "*").replace("</em>", "*");
+        messageText = messageText.replace("<h1>", "# ").replace("</h1>", "#" );
+        messageText = messageText.replace("<h2>", "## ").replace("</h2>", "## ");
+        messageText = messageText.replace("<h3>", "### ").replace("</h3>", "### ");
+        messageText = messageText.replace("<h4>", "#### ").replace("</h4>", "#### ");
+        messageText = messageText.replace("<h5>", "##### ").replace("</h5>", "##### ");
+        messageText = messageText.replace("<h6>", "###### ").replace("</h6>", "###### ");
+        
+        // Determine if the message is from the character or user
+        if (index % 2 === 0) {
+          characterMessages.push(messageText);
+        } else {
+          if (parentSlide && parentSlide.classList.contains("swiper-slide-active")) {
+            characterMessages.push(messageText);
+          } else {
+            // Get the sibling div which contains the username
+            var userNameDiv = messageDiv.previousElementSibling;
+            if (userNameDiv) {
+              userNames.push(userNameDiv.textContent.trim());
+            } else {
+              userNames.push("Unknown User");
+            }
+            userMessages.push(messageText);
+          }
+        }
+      });
+
+
+      caughtOne = false;
+
+      console.log(characterName);
+    
+      // Combine character and user messages
+      var organizedMessages = [];
+      for (var i = 0; i < characterMessages.length || i < userMessages.length; i++) {
+        if (characterMessages[i]) {
+          organizedMessages.push(`<<Character (Character Name = ${characterName}) Message Start>>\n\n${characterMessages[i]}\n\n<<Character Message End>>`);
+        }
+        if (userMessages[i]) {
+          organizedMessages.push(`<<User (User Name = ${userNames[i]}) Message Start>>\n\n${userMessages[i]}\n\n<<User Message End>>`);
+        }
+      }
+    
+      // Display the summarized messages
+      var summaryText = organizedMessages.join("\n\n");
+    
+      console.log(summaryText);
+    
+      // Check if the summaryText is less than 500 characters long
+      if (summaryText.length < 500) {
+        alert("The chat is too short to scan.");
+        scanButton.disabled = false;
+        scanButton.textContent = "Generate Automatically";
+        return;
+      }
+    
+      // Send a request to the API using fetch method
+      const response = await fetch('https://api.cohere.ai/v1/summarize', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer npknXHWGCEpBMB87M5KEYZJFpeZB4uKoSN7pQXSj',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: summaryText,
+          length: 'auto',
+          format: 'bullets',
+          model: currentlySelectedModel,
+          additional_command: 'Extract facts and events from the conversation. Do not make up any information.',
           temperature: 0.6
         })
       });
@@ -752,6 +1036,20 @@ color: white;
   }
 }
 
+function toggleFixedField() {
+  var fixedField = document.getElementById("fixed-field");
+  var toggleButton = document.getElementById("toggle-fixedfield-button");
+
+  if (fixedField.style.display === "block") {
+    fixedField.style.display = "none";
+    toggleButton.innerHTML = "&#8942;";
+  }
+  else {
+    fixedField.style.display = "block";
+    toggleButton.innerHTML = "&#8942;";
+  }
+}
+
 function updateSidebarWidth() {
   var screenWidth = window.innerWidth;
   var sidebar = document.getElementById("memory-manager");
@@ -765,12 +1063,32 @@ function updateSidebarWidth() {
       sidebar.style.zIndex = 15000;
     }
     fixedField.style.display = "block";
-    fixedField.style.position = "relative";
-    fixedField.style.marginBottom = "200px";
+    fixedField.style.position = "fixed";
     fixedField.style.width = "100%";
     fixedField.style.left = "0";
+    fixedField.style.bottom = "0";
+    fixedField.style.height = "90px";
+
+    // Create a button to toggle the fixed field
+    if (!document.getElementById("toggle-fixedfield-button")) {
+      var toggleButton2 = document.createElement("button");
+      toggleButton2.id = "toggle-fixedfield-button";
+      toggleButton2.innerHTML = `&#8942;`;
+      toggleButton2.style.right = "0";
+      toggleButton2.style.top = "100px";
+      toggleButton2.style.padding = "5px 10px";
+      toggleButton2.style.border = "none";
+      toggleButton2.style.position = "fixed";
+      toggleButton2.style.zIndex = 9999;
+
+      toggleButton2.addEventListener("click", function () {
+        toggleFixedField();
+      })
+
+      document.body.appendChild(toggleButton2);
+    }
     // Move fixedField to below the #root div
-    document.body.insertAdjacentElement("beforeend", fixedField);
+    document.body.insertAdjacentElement("afterend", fixedField);
   } else {
     if (sidebar) {
       sidebar.style.width = "25%";
@@ -778,9 +1096,17 @@ function updateSidebarWidth() {
       sidebar.style.zIndex = 999;
     }
     fixedField.style.position = "fixed";
+    fixedField.style.display = "block";
     fixedField.style.marginBottom = "0";
     fixedField.style.width = "115px";
     fixedField.style.left = "20px";
+    fixedField.style.height = "60px";
+    fixedField.style.bottom = "20px";
+
+    if (document.getElementById("toggle-fixedfield-button"))
+    {
+      document.getElementById("toggle-fixedfield-button").remove();
+    }
 
     // Move fixedField to above the #root div
     document.body.insertAdjacentElement("afterbegin", fixedField);
@@ -831,17 +1157,19 @@ toggleRoundedAvatars();
 var screenWidth = window.innerWidth;
 var fixedField = document.createElement("div");
 fixedField.id = "fixed-field";
-fixedField.style.position = screenWidth <= 960 ? "relative" : "fixed";
+fixedField.style.position = screenWidth <= 960 ? "fixed" : "fixed";
 fixedField.style.left = screenWidth <= 960 ? "0" : "20px";
-fixedField.style.bottom = "20px";
+fixedField.style.bottom <= 960 ? "0" : "20px";
 fixedField.style.width = screenWidth <= 960 ? "100%" : "115px";
 fixedField.style.height = "60px";
-fixedField.style.marginBottom = screenWidth <= 960 ? "200px" : "0";
+fixedField.style.marginBottom = screenWidth <= 960 ? "0" : "0";
 fixedField.style.backgroundColor = "#f0f0f0";
 fixedField.style.zIndex = "9999";
 fixedField.style.padding = "10px";
 fixedField.style.boxShadow = "5px 5px 10px rgba(0, 0, 0, 0.1)";
-document.body.appendChild(fixedField);
+document.body.insertAdjacentElement("afterend", fixedField);
+
+updateSidebarWidth();
 
 // create a cog button for opening addon settings
 var cogButton = document.createElement("button");
