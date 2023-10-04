@@ -256,20 +256,20 @@ function initMemoryManager() {
         "character-memory-select"
       );
       var userMemorySelect = document.getElementById("user-memory-select");
-
+    
       // Clear existing memory options
       characterMemorySelect.innerHTML =
         '<option value="" disabled selected>--Select a memory--</option>';
       userMemorySelect.innerHTML =
         '<option value="" disabled selected>--Select a memory--</option>';
-
+    
       // Split memoryString by newlines
       var memoryLines = memoryString.split("\n");
-
+    
       memoryLines.forEach(function (memoryLine) {
         // Trim whitespace and check for AI memories or User Facts keywords
         var cleanedLine = memoryLine.trim();
-
+    
         if (cleanedLine.startsWith("[ AI memories:")) {
           var memories = cleanedLine.match(/"([^"]*)"/g);
           if (memories) {
@@ -279,6 +279,7 @@ function initMemoryManager() {
               newOption.value = cleanedMemory;
               newOption.textContent = cleanedMemory;
               characterMemorySelect.appendChild(newOption);
+              characterMemorySelect.selectedIndex = 1;
             });
           }
         } else if (cleanedLine.startsWith("[ User Facts:")) {
@@ -290,13 +291,28 @@ function initMemoryManager() {
               newOption.value = cleanedMemory;
               newOption.textContent = cleanedMemory;
               userMemorySelect.appendChild(newOption);
+              userMemorySelect.selectedIndex = 1;
             });
           }
         }
       });
-
+    
+      // Show remove button if there are more than one options
+      if(characterMemorySelect.options.length > 1){
+        document.getElementById(
+          "remove-character-memory-button"
+        ).style.display = "inline-block";
+      }
+    
+      if(userMemorySelect.options.length > 1){
+        document.getElementById(
+          "remove-user-memory-button"
+        ).style.display = "inline-block";
+      }
+    
       updateMemoryString(); // Update the displayed memory string
     }
+    
 
     // create a function to insert the memory string to the user input textarea
     function insertMemoryString() {
@@ -1206,7 +1222,7 @@ var settingsPanel = document.createElement("div");
 settingsPanel.id = "addon-settings-panel";
 settingsPanel.style.display = "none";
 settingsPanel.style.position = "absolute";
-settingsPanel.style.bottom = "50px";
+settingsPanel.style.bottom = screenWidth <= 960 ? "75px" : "50px";
 settingsPanel.style.left = "10px";
 settingsPanel.style.width = "300px";
 settingsPanel.style.backgroundColor = "#fff";
