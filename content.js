@@ -603,7 +603,7 @@ color: white;
       const response = await fetch('https://api.cohere.ai/v1/summarize', {
           method: 'POST',
           headers: {
-            'Authorization': 'Bearer npknXHWGCEpBMB87M5KEYZJFpeZB4uKoSN7pQXSj',
+            'Authorization': 'Bearer ikdrKhHFuG9jlsA9fTePLRokNhWBWftZSH6D4wgU',
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
@@ -774,7 +774,7 @@ color: white;
       const response = await fetch('https://api.cohere.ai/v1/summarize', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer npknXHWGCEpBMB87M5KEYZJFpeZB4uKoSN7pQXSj',
+          'Authorization': 'Bearer ikdrKhHFuG9jlsA9fTePLRokNhWBWftZSH6D4wgU',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -936,7 +936,7 @@ color: white;
       const response = await fetch('https://api.cohere.ai/v1/summarize', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer npknXHWGCEpBMB87M5KEYZJFpeZB4uKoSN7pQXSj',
+          'Authorization': 'Bearer ikdrKhHFuG9jlsA9fTePLRokNhWBWftZSH6D4wgU',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -1062,7 +1062,11 @@ function updateSidebarWidth() {
       toggleButton.style.top = "50px";
       sidebar.style.zIndex = 15000;
     }
-    fixedField.style.display = "block";
+    if (fixedField.style.display === "none") {
+      fixedField.style.display = "none";
+    } else {
+      fixedField.style.display = "block";
+    }
     fixedField.style.position = "fixed";
     fixedField.style.width = "100%";
     fixedField.style.left = "0";
