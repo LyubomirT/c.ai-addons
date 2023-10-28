@@ -437,7 +437,24 @@ color: white;
       currentlySelectedModel = modelSelect.value;
     })
     DIVFORTHEINSERTBUTTON.appendChild(modelSelect);
+
+    // Add a text input for the user to enter the API key
+    var apiKeyInput = document.createElement("input");
+    apiKeyInput.style.borderRadius = "5px";
+    apiKeyInput.style.marginTop = "10px";
+    apiKeyInput.style.padding = "10px";
+    apiKeyInput.style.width = "80%";
+    apiKeyInput.id = "api-key-input";
+    apiKeyInput.placeholder = "Enter your API key here";
+    apiKeyInput.addEventListener("change", function () {
+      localStorage.setItem("cohereApiKey", apiKeyInput.value);
+    });
+
+    if (localStorage.getItem("cohereApiKey")) {
+      apiKeyInput.value = localStorage.getItem("cohereApiKey");
+    }
     
+    DIVFORTHEINSERTBUTTON.appendChild(apiKeyInput);
     function convertToMemoryString(obj) {
       // Extract the summary from the object
       var summary = obj.summary;
@@ -468,7 +485,11 @@ color: white;
 
     // Function to scan and summarize messages
     async function scanMessages() {
-
+      
+      if (apiKeyInput.value.trim() === "") {
+        alert("Please enter your Cohere API key. You can get one for free at https://cohere.com/");
+        return;
+      }
       scanButton.textContent = "Scanning... (Might take a while)";
       scanButton.disabled = true;
       // Check if the window.location.href contains "chat2"
@@ -619,7 +640,7 @@ color: white;
       const response = await fetch('https://api.cohere.ai/v1/summarize', {
           method: 'POST',
           headers: {
-            'Authorization': 'Bearer ikdrKhHFuG9jlsA9fTePLRokNhWBWftZSH6D4wgU',
+            'Authorization': `Bearer ${apiKeyInput.value}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
@@ -790,7 +811,7 @@ color: white;
       const response = await fetch('https://api.cohere.ai/v1/summarize', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer ikdrKhHFuG9jlsA9fTePLRokNhWBWftZSH6D4wgU',
+          'Authorization': `Bearer ${apiKeyInput.value}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -952,7 +973,7 @@ color: white;
       const response = await fetch('https://api.cohere.ai/v1/summarize', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer ikdrKhHFuG9jlsA9fTePLRokNhWBWftZSH6D4wgU',
+          'Authorization': `Bearer ${apiKeyInput.value}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -1283,6 +1304,108 @@ legacyChatsToggleLabel.htmlFor = "legacy-chats-toggle";
 legacyChatsToggleLabel.textContent = "Enable Legacy Chats";
 settingsPanel.appendChild(legacyChatsToggleLabel);
 
+br = document.createElement("br");
+settingsPanel.appendChild(br);
+
+var newStyleToggle = document.createElement("input");
+newStyleToggle.type = "checkbox";
+newStyleToggle.id = "new-style-toggle";
+newStyleToggle.style.marginRight = "5px";
+newStyleToggle.checked = false; // Disabled by default
+settingsPanel.appendChild(newStyleToggle);
+
+var newStyleToggleLabel = document.createElement("label");
+newStyleToggleLabel.htmlFor = "new-style-toggle";
+newStyleToggleLabel.textContent = "Enable New Message Style";
+settingsPanel.appendChild(newStyleToggleLabel);
+
+br = document.createElement("br");
+settingsPanel.appendChild(br);
+
+var differentFontToggle = document.createElement("input");
+differentFontToggle.type = "checkbox";
+differentFontToggle.id = "different-font-toggle";
+differentFontToggle.style.marginRight = "5px";
+differentFontToggle.checked = false; // Disabled by default
+settingsPanel.appendChild(differentFontToggle);
+
+var differentFontToggleLabel = document.createElement("label");
+differentFontToggleLabel.htmlFor = "different-font-toggle";
+differentFontToggleLabel.textContent = "Enable Different Font";
+settingsPanel.appendChild(differentFontToggleLabel);
+
+var br = document.createElement("br");
+settingsPanel.appendChild(br);
+
+// Create a select element for font selection
+var fontSelect = document.createElement("select");
+fontSelect.id = "font-select";
+fontSelect.style.width = "80%";
+fontSelect.style.marginBottom = "10px";
+
+// Create an array of pre-set Google Fonts
+var googleFonts = [
+  "Arial",
+  "Roboto",
+  "Open Sans",
+  "Lato",
+  "Montserrat",
+  "Raleway",
+  "Noto Sans",
+  "Ubuntu",
+  "Poppins",
+  "Source Sans Pro",
+];
+
+// Populate the select element with pre-set fonts
+for (var i = 0; i < googleFonts.length; i++) {
+  var option = document.createElement("option");
+  option.value = googleFonts[i];
+  option.text = googleFonts[i];
+  fontSelect.appendChild(option);
+}
+
+settingsPanel.appendChild(fontSelect);
+
+differentFontToggle.addEventListener("change", function () {
+  localStorage.setItem("differentFontEnabled", this.checked);
+  fontSelect.disabled = !this.checked;
+});
+
+if (localStorage.getItem("differentFontEnabled") === "true") {
+  differentFontToggle.checked = true;
+  fontSelect.disabled = false;
+} else {
+  differentFontToggle.checked = false;
+  fontSelect.disabled = true;
+}
+
+fontSelect.addEventListener("change", function () {
+  var selectedFont = this.value;
+  localStorage.setItem("selectedFont", selectedFont);
+
+  // Generate the Google Fonts URL and apply it to the page
+  var googleFontLink = document.createElement("link");
+  googleFontLink.href = `https://fonts.googleapis.com/css?family=${selectedFont.replace(/ /g, '+')}`;
+  googleFontLink.rel = "stylesheet";
+  document.head.appendChild(googleFontLink);
+
+  // Apply the font-family to the body
+  document.body.style.fontFamily = selectedFont;
+  showMessage("Font changed. Please reload the page for the changes to apply.");
+});
+
+if (localStorage.getItem("selectedFont") && localStorage.getItem("differentFontEnabled") === "true") {
+  var selectedFont = localStorage.getItem("selectedFont");
+  fontSelect.value = selectedFont;
+  // Apply the font-family to the body
+  styleTag = document.createElement("style");
+  styleTag.innerHTML = `@import url('https://fonts.googleapis.com/css?family=${selectedFont.replace(/ /g, '+')}'); body { font-family: ${selectedFont} !important; }`;
+  document.head.appendChild(styleTag);
+}
+
+
+
 legacyChatsToggle.addEventListener("change", function () {
   localStorage.setItem("legacyChatsEnabled", this.checked);
   showMessage("Please reload the page for the changes to apply.");
@@ -1294,6 +1417,47 @@ if (localStorage.getItem("legacyChatsEnabled") === "true") {
 } else {
   legacyChatsToggle.checked = false;
 }
+
+newStyleToggle.addEventListener("change", function () {
+  localStorage.setItem("newStyleEnabled", this.checked);
+  showMessage("Please reload the page for the changes to apply.");
+});
+
+if (localStorage.getItem("newStyleEnabled") === "true") {
+  newStyleToggle.checked = true;
+} else {
+  newStyleToggle.checked = false;
+}
+
+// When there's a new mutation in <body>, get all 'swiper-no-swiping' divs, then their parent, and set the parent's style to the specified style
+var observer222 = new MutationObserver(function (mutations) {
+  mutations.forEach(function (mutation) {
+    if (mutation.type == "childList" && mutation.addedNodes.length > 0 && localStorage.getItem("newStyleEnabled") === "true") {
+      var swipers = document.querySelectorAll(".swiper-no-swiping");
+      swipers.forEach(function (swiper) {
+        var parent = swiper.parentElement;
+        // Make the corners rounded (8px) except the top-left corner
+        parent.style.borderRadius = "0 8px 8px 8px";
+        parent.style.backgroundColor = "#f0f0f0";
+        parent.style.padding = "18px";
+        parent.style.marginLeft = "10px";
+      });
+      // Get all images and make their corners rounded (if the user has enabled rounded avatars)
+      var images = document.querySelectorAll("img");
+      images.forEach(function (image) {
+        image.style.borderRadius = localStorage.getItem("roundedAvatars") === "true" ? "0" : "5px";
+      });
+      if (localStorage.getItem("differentFontEnabled") === "true") {
+        document.body.style.fontFamily = localStorage.getItem("selectedFont");
+      }
+    }
+  });
+});
+
+observer222.observe(document.body, {
+  childList: true,
+  subtree: true,
+});
 
 // handle addon settings button click
 cogButton.addEventListener("click", function () {

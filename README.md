@@ -59,6 +59,12 @@ In the top right corner of the webpage, there is a button, with an arrow. Clicki
 
 ![Memory Manager Button](resources/markdown/oc.png)
 
+### Note
+
+In order to use the memory manager, you are required to have a Cohere API key. You can get one by signing up [here](https://cohere.com/). After that, you'll be redirected to the dashboard, where you can find your API key in the API keys section. Copy it, and paste it in the "Cohere API Key" input in the Memory Manager.
+
+The API Key is totally free, and is not exposed to anyone, except you. We highly recommend you to not share your API key with anyone, as it can be used to use Cohere on your behalf.
+
 ## Legacy Chats
 
 In a recent update, Character.AI changed the way you chat, as well as removing a few neat features. This addon brings back the old chat, as well as the features that were removed.
@@ -78,6 +84,34 @@ This addon removes the rounded corners from the avatars. It can be enabled by en
 The toolbar covers a lot of space in the bottom part of the screen on mobile devices. You can easily hide it by clicking the three-dot button in the top right corner of the page. This will hide the toolbar, and you can show it again by clicking the same button.
 
 ![Toolbar Button](resources/markdown/ocstuff.png)
+
+## New Message Style
+
+This addon changes the style of the messages (sent by both the AI and the user). It can be enabled by enabling the "Enable New Message Style" option in the extension settings. Basically, it makes the messages look more visually appealing and easier to read.
+
+![New Message Style](resources/markdown/newstyletoggle.png)
+
+![New Message Style Preview](resources/markdown/nmsp.png)
+
+## Font Override
+
+If you don't like the default font, you can change it by enabling the "Enable Different Font" option in the extension settings. After that, you can select a font from the dropdown menu. The currently available fonts are:
+
+- Arial
+- Roboto
+- Open Sans
+- Lato
+- Montserrat
+- Raleway
+- Ubuntu
+- Noto Sans
+- Source Sans Pro
+
+You will need to refresh the page after changing the font. Also, please notice that the font might have a different width, and might slightly break the UI (but it's not that bad).
+
+![Font Override](resources/markdown/selectfonts.png)
+
+![Font Override Preview](resources/markdown/fontpreview.png)
 
 # Contributing
 
