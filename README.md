@@ -1,5 +1,5 @@
 # c.ai-addons
-Additional Tools for Character.ai
+Enhance your Character.ai experience with a set of useful features and tools to make your interactions smoother and more personalized. This extension is a collection of handy add-ons designed to empower your conversations and improve the user interface.
 
 ## Installation
 1. Download the latest release from the [releases page](https://github.com/LyubomirT/c.ai-addons/releases).
