@@ -89,7 +89,7 @@ The toolbar covers a lot of space in the bottom part of the screen on mobile dev
 
 This addon changes the style of the messages (sent by both the AI and the user). It can be enabled by enabling the "Enable New Message Style" option in the extension settings. Basically, it makes the messages look more visually appealing and easier to read.
 
-![New Message Style](resources/markdown/newstyletoggle.png)
+![New Message Style](resources/markdown/newstyletoggle.PNG)
 
 ![New Message Style Preview](resources/markdown/nmsp.png)
 
@@ -111,7 +111,7 @@ You will need to refresh the page after changing the font. Also, please notice t
 
 ![Font Override](resources/markdown/selectfonts.png)
 
-![Font Override Preview](resources/markdown/fontpreview.png)
+![Font Override Preview](resources/markdown/fontpreview.PNG)
 
 # Contributing
 
