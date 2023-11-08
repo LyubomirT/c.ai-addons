@@ -667,7 +667,7 @@ color: white;
 
     async function scanChat2Messages() {
 
-      if (screenWidth <= 960) {
+      if (typeof screen.orientation !== 'undefined') {
         scanChat3Messages();
         return;
       }
@@ -1609,3 +1609,616 @@ function initLegacy() {
   // Append the New Legacy Chat button to the document body
   fixedField.appendChild(newLegacyChatButton);
 }
+
+var checked = false;
+
+async function seekForMessagesToExportInChat2() {
+  var characterNameElement = document.querySelector(".chat2 > div > div > button + div > div > div:first-child");
+  var characterName = characterNameElement ? characterNameElement.textContent : "Unknown Character";
+
+  // Get all message divs
+  var messageDivs = document.querySelectorAll(".swiper-no-swiping");
+
+  // Initialize arrays to store character and user messages
+  var characterMessages = [];
+  var userMessages = [];
+  var userNames = [];
+
+  // Iterate through each message div
+  messageDivs.forEach(function (messageDiv, index) {
+    // Ignore messages that are not in the active slide
+    var parentSlide = messageDiv.closest(".swiper-slide");
+    if (parentSlide && !parentSlide.classList.contains("swiper-slide-active") || caughtOne) {
+      return;
+    }
+
+    if (parentSlide && parentSlide.classList.contains("swiper-slide-active")) {
+      caughtOne = true;
+    }
+    
+    // Find the <p> elements inside the message div
+    var messageParagraphs = messageDiv.querySelectorAll("p");
+    var messageBlockquotes = messageDiv.querySelectorAll("blockquote > p");
+    var messageInlineCodes = messageDiv.querySelectorAll("code");
+    var messageUls = messageDiv.querySelectorAll("ul, ol");
+    
+    // Extract and store the text content of each <p> element
+    var messageText = Array.from(messageParagraphs).map(function (paragraph) {
+      // Handle special elements inside the message
+      var specialElements = messageDiv.querySelectorAll("ul, ol, pre, blockquote, code");
+      if (specialElements.length > 0) {
+        return Array.from(specialElements).map(function (element) {
+          if (element.type == "code") {
+            return element.textContent;
+          }
+          else if (element.type == "blockquote") {
+            console.log(element.childNodes[0].innerText);
+            return element.childNodes[0].innerText;
+          }
+          return element.textContent;
+        }).join("\n");
+      } else {
+        return paragraph.innerHTML;
+      }
+    }).join("\n");
+
+    // Handle blockquotes
+    if (messageBlockquotes.length > 0) {
+      for (var i = 0; i < messageBlockquotes.length; i++) {
+        messageText += "> " + messageBlockquotes[i].textContent + "\n";
+      }
+    }
+
+    // Handle inline codes
+    if (messageInlineCodes.length > 0) {
+      for (var i = 0; i < messageInlineCodes.length; i++) {
+        messageText += "`" + messageInlineCodes[i].textContent + "`";
+      }
+    }
+
+    // Handle lists
+    if (messageUls.length > 0) {
+      for (var i = 0; i < messageUls.length; i++) {
+        console.log('List:', messageUls[i]); // Debugging line
+        for (var j = 0; j < messageUls[i].childNodes.length; j++) {
+          console.log('List Item:', messageUls[i].childNodes[j]); // Debugging line
+          if (messageUls[i].childNodes[j].nodeType === 1) {
+            // Check if it's an element node
+            messageText += "- " + messageUls[i].childNodes[j].textContent.trim() + "\n";
+          }
+        }
+      }
+    }
+
+    messageText = messageText.replace("<strong>", "**").replace("</strong>", "**");
+    messageText = messageText.replace("<em>", "*").replace("</em>", "*");
+    messageText = messageText.replace("<h1>", "# ").replace("</h1>", "#" );
+    messageText = messageText.replace("<h2>", "## ").replace("</h2>", "## ");
+    messageText = messageText.replace("<h3>", "### ").replace("</h3>", "### ");
+    messageText = messageText.replace("<h4>", "#### ").replace("</h4>", "#### ");
+    messageText = messageText.replace("<h5>", "##### ").replace("</h5>", "##### ");
+    messageText = messageText.replace("<h6>", "###### ").replace("</h6>", "###### ");
+    
+    // Determine if the message is from the character or user
+    if (index % 2 === 0) {
+      characterMessages.push(messageText);
+    } else {
+      if (parentSlide && parentSlide.classList.contains("swiper-slide-active")) {
+        characterMessages.push(messageText);
+      } else {
+        // Get the sibling div which contains the username
+        var userNameDiv = messageDiv.previousElementSibling;
+        if (userNameDiv) {
+          userNames.push(userNameDiv.textContent.trim());
+        } else {
+          userNames.push("Unknown User");
+        }
+        userMessages.push(messageText);
+      }
+    }
+  });
+
+  caughtOne = false;
+
+  console.log(characterName);
+
+  // Combine character and user messages
+  var organizedMessages = [];
+  for (var i = 0; i < characterMessages.length || i < userMessages.length; i++) {
+    if (characterMessages[i]) {
+      organizedMessages.push(`<<Character (Character Name = ${characterName}) Message Start>>\n\n${characterMessages[i]}\n\n<<Character Message End>>`);
+    }
+    if (userMessages[i]) {
+      organizedMessages.push(`<<User (User Name = ${userNames[i]}) Message Start>>\n\n${userMessages[i]}\n\n<<User Message End>>`);
+    }
+  }
+
+  // Display the summarized messages
+  var summaryText = organizedMessages.join("\n\n");
+
+  console.log(summaryText);
+
+  return summaryText;
+}
+
+async function seekForMessagesToExportInChat3() {
+  var characterNameElement = document.querySelector(".chat2 > div > div > button + div > div > div:first-child");
+  var characterName = characterNameElement ? characterNameElement.textContent : "Unknown Character";
+
+  // Get all message divs
+  var messageDivs = document.querySelectorAll('div[class=""]');
+
+  // Initialize arrays to store character and user messages
+  var characterMessages = [];
+  var userMessages = [];
+  var userNames = [];
+
+  // Iterate through each message div
+  messageDivs.forEach(function (messageDiv, index) {
+    // Ignore messages that are not in the active slide
+    var parentSlide = messageDiv.closest(".swiper-slide");
+    if (parentSlide && !parentSlide.classList.contains("swiper-slide-active") || caughtOne) {
+      return;
+    }
+
+    if (parentSlide && parentSlide.classList.contains("swiper-slide-active")) {
+      caughtOne = true;
+    }
+    
+    // Find the <p> elements inside the message div
+    var messageParagraphs = messageDiv.querySelectorAll("p");
+    var messageBlockquotes = messageDiv.querySelectorAll("blockquote > p");
+    var messageInlineCodes = messageDiv.querySelectorAll("code");
+    var messageUls = messageDiv.querySelectorAll("ul, ol");
+    
+    
+    // Extract and store the text content of each <p> element
+    var messageText = Array.from(messageParagraphs).map(function (paragraph) {
+      // Handle special elements inside the message
+      var specialElements = messageDiv.querySelectorAll("ul, ol, pre, blockquote, code");
+      if (specialElements.length > 0) {
+        return Array.from(specialElements).map(function (element) {
+          return element.textContent;
+        }).join("\n");
+      } else {
+        return paragraph.innerHTML;
+      }
+    }).join("\n");
+
+    // Handle blockquotes
+    if (messageBlockquotes.length > 0) {
+      for (var i = 0; i < messageBlockquotes.length; i++) {
+        messageText += "> " + messageBlockquotes[i].textContent + "\n";
+      }
+    }
+
+    // Handle inline codes
+    if (messageInlineCodes.length > 0) {
+      for (var i = 0; i < messageInlineCodes.length; i++) {
+        messageText += "`" + messageInlineCodes[i].textContent + "`";
+      }
+    }
+
+    // Handle lists
+    if (messageUls.length > 0) {
+      for (var i = 0; i < messageUls.length; i++) {
+        console.log('List:', messageUls[i]); // Debugging line
+        for (var j = 0; j < messageUls[i].childNodes.length; j++) {
+          console.log('List Item:', messageUls[i].childNodes[j]); // Debugging line
+          if (messageUls[i].childNodes[j].nodeType === 1) {
+            // Check if it's an element node
+            messageText += "- " + messageUls[i].childNodes[j].textContent.trim() + "\n";
+          }
+        }
+      }
+    }
+
+    messageText = messageText.replace("<strong>", "**").replace("</strong>", "**");
+    messageText = messageText.replace("<em>", "*").replace("</em>", "*");
+    messageText = messageText.replace("<h1>", "# ").replace("</h1>", "#" );
+    messageText = messageText.replace("<h2>", "## ").replace("</h2>", "## ");
+    messageText = messageText.replace("<h3>", "### ").replace("</h3>", "### ");
+    messageText = messageText.replace("<h4>", "#### ").replace("</h4>", "#### ");
+    messageText = messageText.replace("<h5>", "##### ").replace("</h5>", "##### ");
+    messageText = messageText.replace("<h6>", "###### ").replace("</h6>", "###### ");
+    
+    // Determine if the message is from the character or user
+    if (index % 2 === 0) {
+      characterMessages.push(messageText);
+    } else {
+      if (parentSlide && parentSlide.classList.contains("swiper-slide-active")) {
+        characterMessages.push(messageText);
+      } else {
+        // Get the sibling div which contains the username
+        var userNameDiv = messageDiv.previousElementSibling;
+        if (userNameDiv) {
+          userNames.push(userNameDiv.textContent.trim());
+        } else {
+          userNames.push("Unknown User");
+        }
+        userMessages.push(messageText);
+      }
+    }
+  });
+
+
+  caughtOne = false;
+
+  console.log(characterName);
+
+  // Combine character and user messages
+  var organizedMessages = [];
+  for (var i = 0; i < characterMessages.length || i < userMessages.length; i++) {
+    if (characterMessages[i]) {
+      organizedMessages.push(`<<Character (Character Name = ${characterName}) Message Start>>\n\n${characterMessages[i]}\n\n<<Character Message End>>`);
+    }
+    if (userMessages[i]) {
+      organizedMessages.push(`<<User (User Name = ${userNames[i]}) Message Start>>\n\n${userMessages[i]}\n\n<<User Message End>>`);
+    }
+  }
+
+  // Display the summarized messages
+  var summaryText = organizedMessages.join("\n\n");
+
+  console.log(summaryText);
+
+  return summaryText;
+}
+
+mutationObserverManipulationButtons = new MutationObserver(function (mutations) {
+  mutations.forEach(function (mutation) {
+    if (mutation.type == "childList" && mutation.addedNodes.length > 0) {
+      doesitexist = document.querySelector(".col-auto");
+      if (doesitexist && !checked)
+      {
+        checked = true;
+        elementToAdd = document.createElement("button");
+        elementToAdd.ariaLabel = "Export Chat";
+        elementToAdd.style = `
+        color-scheme: dark !important;
+        --rem: 16;
+        --darkreader-neutral-background: #1f2020;
+        --darkreader-neutral-text: #d6d0c6;
+        --darkreader-selection-background: #15539c;
+        --darkreader-selection-text: #e5e0d8;
+        --bs-primary-rgb: 13,110,253;
+        --bs-secondary-rgb: 108,117,125;
+        --bs-success-rgb: 25,135,84;
+        --bs-info-rgb: 13,202,240;
+        --bs-warning-rgb: 255,193,7;
+        --bs-danger-rgb: 220,53,69;
+        --bs-light-rgb: 248,249,250;
+        --bs-dark-rgb: 33,37,41;
+        --bs-white-rgb: 255,255,255;
+        --bs-black-rgb: 0,0,0;
+        --bs-body-color-rgb: 33,37,41;
+        --bs-body-bg-rgb: 255,255,255;
+        --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+        --bs-body-color: #212529;
+        --bs-body-bg: #fff;
+        --bs-blue: #0d6efd;
+        --bs-indigo: #6610f2;
+        --bs-purple: #6f42c1;
+        --bs-pink: #d63384;
+        --bs-red: #dc3545;
+        --bs-orange: #fd7e14;
+        --bs-yellow: #ffc107;
+        --bs-green: #198754;
+        --bs-teal: #20c997;
+        --bs-cyan: #0dcaf0;
+        --bs-white: #fff;
+        --bs-gray: #6c757d;
+        --bs-gray-dark: #343a40;
+        --bs-gray-100: #f8f9fa;
+        --bs-gray-200: #e9ecef;
+        --bs-gray-300: #dee2e6;
+        --bs-gray-400: #ced4da;
+        --bs-gray-500: #adb5bd;
+        --bs-gray-600: #6c757d;
+        --bs-gray-700: #495057;
+        --bs-gray-800: #343a40;
+        --bs-gray-900: #212529;
+        --bs-primary: #0d6efd;
+        --bs-secondary: #6c757d;
+        --bs-success: #198754;
+        --bs-info: #0dcaf0;
+        --bs-warning: #ffc107;
+        --bs-danger: #dc3545;
+        --bs-light: #f8f9fa;
+        --bs-dark: #212529;
+        --darkreader-bg--bs-primary-rgb: 24, 86, 178;
+        --darkreader-text--bs-primary-rgb: 57, 147, 229;
+        --darkreader-bg--bs-secondary-rgb: 96, 100, 101;
+        --darkreader-text--bs-secondary-rgb: 159, 151, 136;
+        --darkreader-bg--bs-success-rgb: 39, 109, 73;
+        --darkreader-text--bs-success-rgb: 131, 220, 173;
+        --darkreader-bg--bs-info-rgb: 36, 157, 178;
+        --darkreader-text--bs-info-rgb: 65, 200, 223;
+        --darkreader-bg--bs-warning-rgb: 148, 115, 22;
+        --darkreader-text--bs-warning-rgb: 243, 195, 53;
+        --darkreader-bg--bs-danger-rgb: 155, 44, 53;
+        --darkreader-text--bs-danger-rgb: 208, 82, 91;
+        --darkreader-bg--bs-light-rgb: 39, 40, 40;
+        --darkreader-text--bs-light-rgb: 225, 221, 212;
+        --darkreader-bg--bs-dark-rgb: 39, 41, 40;
+        --darkreader-text--bs-dark-rgb: 207, 201, 191;
+        --darkreader-bg--bs-white-rgb: 36, 37, 37;
+        --darkreader-text--bs-white-rgb: 229, 224, 216;
+        --darkreader-bg--bs-black-rgb: 13, 13, 13;
+        --darkreader-text--bs-black-rgb: 229, 224, 216;
+        --darkreader-text--bs-body-color-rgb: 207, 201, 191;
+        --darkreader-bg--bs-body-bg-rgb: 36, 37, 37;
+        --bs-font-sans-serif: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+        --bs-font-monospace: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+        --darkreader-bgimg--bs-gradient: linear-gradient(180deg, rgba(36, 37, 37, 0.15), rgba(36, 37, 37, 0));
+        --bs-body-font-family: var(--bs-font-sans-serif);
+        --bs-body-font-size: 1rem;
+        --bs-body-font-weight: 400;
+        --bs-body-line-height: 1.5;
+        --darkreader-text--bs-body-color: #cfc9bf;
+        --darkreader-bg--bs-body-bg: #242525;
+        --toastify-color-light: #fff;
+        --toastify-color-dark: #121212;
+        --toastify-color-info: #3498db;
+        --toastify-color-success: #07bc0c;
+        --toastify-color-warning: #f1c40f;
+        --toastify-color-error: #e74c3c;
+        --toastify-color-transparent: hsla(0,0%,100%,.7);
+        --toastify-text-color-light: #757575;
+        --toastify-text-color-dark: #fff;
+        --toastify-text-color-info: #fff;
+        --toastify-text-color-success: #fff;
+        --toastify-text-color-warning: #fff;
+        --toastify-text-color-error: #fff;
+        --toastify-spinner-color: #616161;
+        --toastify-color-progress-light: linear-gradient(90deg,#4cd964,#5ac8fa,#007aff,#34aadc,#5856d6,#ff2d55);
+        --toastify-color-progress-dark: #bb86fc;
+        --swiper-theme-color: #007aff;
+        --darkreader-bg--toastify-color-light: #242525;
+        --darkreader-bg--toastify-color-dark: #1a1b1a;
+        --darkreader-bg--toastify-color-info: #30719a;
+        --darkreader-bg--toastify-color-success: #1d901c;
+        --darkreader-bg--toastify-color-warning: #8f781c;
+        --darkreader-bg--toastify-color-error: #992f23;
+        --darkreader-bg--toastify-color-transparent: rgba(36, 37, 37, 0.7);
+        --toastify-icon-color-info: var(--toastify-color-info);
+        --toastify-icon-color-success: var(--toastify-color-success);
+        --toastify-icon-color-warning: var(--toastify-color-warning);
+        --toastify-icon-color-error: var(--toastify-color-error);
+        --toastify-toast-width: 320px;
+        --toastify-toast-background: #fff;
+        --toastify-toast-min-height: 64px;
+        --toastify-toast-max-height: 800px;
+        --toastify-font-family: sans-serif;
+        --toastify-z-index: 9999;
+        --darkreader-text--toastify-text-color-light: #9f9788;
+        --darkreader-text--toastify-text-color-dark: #e5e0d8;
+        --darkreader-text--toastify-text-color-info: #e5e0d8;
+        --darkreader-text--toastify-text-color-success: #e5e0d8;
+        --darkreader-text--toastify-text-color-warning: #e5e0d8;
+        --darkreader-text--toastify-text-color-error: #e5e0d8;
+        --darkreader-border--toastify-spinner-color: #71695d;
+        --toastify-spinner-color-empty-area: #e0e0e0;
+        --darkreader-bgimg--toastify-color-progress-light: linear-gradient(90deg, #349153, #1b6a8c, #1766b9, #307d9b, #302f84, #a3132d);
+        --darkreader-bg--toastify-color-progress-dark: #401372;
+        --toastify-color-progress-info: var(--toastify-color-info);
+        --toastify-color-progress-success: var(--toastify-color-success);
+        --toastify-color-progress-warning: var(--toastify-color-warning);
+        --toastify-color-progress-error: var(--toastify-color-error);
+        --darkreader-text--swiper-theme-color: #48a0e7;
+        --swiper-navigation-size: 44px;
+        -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
+        font-family: inherit;
+        line-height: inherit;
+        text-transform: none;
+        display: inline-flex;
+        -webkit-box-align: center;
+        align-items: center;
+        -webkit-box-pack: center;
+        justify-content: center;
+        position: relative;
+        box-sizing: border-box;
+        outline: 0px;
+        border: 0px;
+        margin: 0px;
+        user-select: none;
+        vertical-align: middle;
+        appearance: none;
+        text-decoration: none;
+        text-align: center;
+        flex: 0 0 auto;
+        font-size: 1.5rem;
+        border-radius: 50%;
+        overflow: visible;
+        transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        -webkit-tap-highlight-color: transparent;
+        background-color: transparent;
+        outline-color: initial;
+        border-color: initial;
+        text-decoration-color: initial;
+        color: rgba(229, 224, 216, 0.54);
+        cursor: pointer;
+        `
+        elementToAdd.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512" version="1.1"><path d="" stroke="none" fill="#908c84" fill-rule="evenodd"/><path d="M 204.500 65.659 C 200.117 67.966, 196.081 71.986, 193.908 76.210 C 192.097 79.731, 192 82.779, 192 135.904 L 192 191.888 171.173 192.194 C 150.398 192.499, 150.337 192.507, 146.229 195.228 C 140.123 199.272, 136.650 205.831, 136.609 213.393 C 136.588 217.409, 137.201 220.698, 138.399 223 C 139.402 224.925, 163.010 249.351, 190.861 277.280 C 229.246 315.772, 242.697 328.658, 246.446 330.530 C 252.428 333.517, 258.875 333.715, 264.500 331.087 C 267.205 329.822, 285.539 312.110, 321.148 276.359 C 371.521 225.784, 373.838 223.296, 374.770 218.783 C 375.333 216.054, 375.394 212.261, 374.915 209.783 C 374.460 207.427, 374.068 205.224, 374.044 204.888 C 373.908 202.988, 367.246 196.183, 363.673 194.295 C 359.788 192.243, 358.135 192.087, 339.750 192.045 L 320 192 320 136.468 C 320 88.526, 319.788 80.428, 318.447 77.218 C 316.489 72.530, 312.563 68.363, 307.790 65.908 C 304.286 64.106, 301.389 64.002, 255.790 64.040 C 213.780 64.075, 207.110 64.285, 204.500 65.659 M 119.466 385.400 C 115.873 386.965, 110.500 392.131, 108.557 395.891 C 103.130 406.384, 108.217 419.976, 119.500 425.129 C 123.310 426.869, 129.808 426.956, 256 426.956 C 405.506 426.956, 392.867 427.647, 400.202 419.077 C 409.161 408.610, 406.183 392.636, 394.093 386.307 L 389.685 384 256.093 384.039 C 147.614 384.071, 121.930 384.327, 119.466 385.400" stroke="none" fill="#8c8c84" fill-rule="evenodd"/></svg>`;
+        divForTheButton = document.createElement("div");
+        divForTheButton.style = `
+        color-scheme: dark !important;
+        --rem: 16;
+        --darkreader-neutral-background: #1f2020;
+        --darkreader-neutral-text: #d6d0c6;
+        --darkreader-selection-background: #15539c;
+        --darkreader-selection-text: #e5e0d8;
+        --bs-primary-rgb: 13,110,253;
+        --bs-secondary-rgb: 108,117,125;
+        --bs-success-rgb: 25,135,84;
+        --bs-info-rgb: 13,202,240;
+        --bs-warning-rgb: 255,193,7;
+        --bs-danger-rgb: 220,53,69;
+        --bs-light-rgb: 248,249,250;
+        --bs-dark-rgb: 33,37,41;
+        --bs-white-rgb: 255,255,255;
+        --bs-black-rgb: 0,0,0;
+        --bs-body-color-rgb: 33,37,41;
+        --bs-body-bg-rgb: 255,255,255;
+        --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+        --bs-body-color: #212529;
+        --bs-body-bg: #fff;
+        --bs-blue: #0d6efd;
+        --bs-indigo: #6610f2;
+        --bs-purple: #6f42c1;
+        --bs-pink: #d63384;
+        --bs-red: #dc3545;
+        --bs-orange: #fd7e14;
+        --bs-yellow: #ffc107;
+        --bs-green: #198754;
+        --bs-teal: #20c997;
+        --bs-cyan: #0dcaf0;
+        --bs-white: #fff;
+        --bs-gray: #6c757d;
+        --bs-gray-dark: #343a40;
+        --bs-gray-100: #f8f9fa;
+        --bs-gray-200: #e9ecef;
+        --bs-gray-300: #dee2e6;
+        --bs-gray-400: #ced4da;
+        --bs-gray-500: #adb5bd;
+        --bs-gray-600: #6c757d;
+        --bs-gray-700: #495057;
+        --bs-gray-800: #343a40;
+        --bs-gray-900: #212529;
+        --bs-primary: #0d6efd;
+        --bs-secondary: #6c757d;
+        --bs-success: #198754;
+        --bs-info: #0dcaf0;
+        --bs-warning: #ffc107;
+        --bs-danger: #dc3545;
+        --bs-light: #f8f9fa;
+        --bs-dark: #212529;
+        --darkreader-bg--bs-primary-rgb: 24, 86, 178;
+        --darkreader-text--bs-primary-rgb: 57, 147, 229;
+        --darkreader-bg--bs-secondary-rgb: 96, 100, 101;
+        --darkreader-text--bs-secondary-rgb: 159, 151, 136;
+        --darkreader-bg--bs-success-rgb: 39, 109, 73;
+        --darkreader-text--bs-success-rgb: 131, 220, 173;
+        --darkreader-bg--bs-info-rgb: 36, 157, 178;
+        --darkreader-text--bs-info-rgb: 65, 200, 223;
+        --darkreader-bg--bs-warning-rgb: 148, 115, 22;
+        --darkreader-text--bs-warning-rgb: 243, 195, 53;
+        --darkreader-bg--bs-danger-rgb: 155, 44, 53;
+        --darkreader-text--bs-danger-rgb: 208, 82, 91;
+        --darkreader-bg--bs-light-rgb: 39, 40, 40;
+        --darkreader-text--bs-light-rgb: 225, 221, 212;
+        --darkreader-bg--bs-dark-rgb: 39, 41, 40;
+        --darkreader-text--bs-dark-rgb: 207, 201, 191;
+        --darkreader-bg--bs-white-rgb: 36, 37, 37;
+        --darkreader-text--bs-white-rgb: 229, 224, 216;
+        --darkreader-bg--bs-black-rgb: 13, 13, 13;
+        --darkreader-text--bs-black-rgb: 229, 224, 216;
+        --darkreader-text--bs-body-color-rgb: 207, 201, 191;
+        --darkreader-bg--bs-body-bg-rgb: 36, 37, 37;
+        --bs-font-sans-serif: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+        --bs-font-monospace: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+        --darkreader-bgimg--bs-gradient: linear-gradient(180deg, rgba(36, 37, 37, 0.15), rgba(36, 37, 37, 0));
+        --bs-body-font-family: var(--bs-font-sans-serif);
+        --bs-body-font-size: 1rem;
+        --bs-body-font-weight: 400;
+        --bs-body-line-height: 1.5;
+        --darkreader-text--bs-body-color: #cfc9bf;
+        --darkreader-bg--bs-body-bg: #242525;
+        --toastify-color-light: #fff;
+        --toastify-color-dark: #121212;
+        --toastify-color-info: #3498db;
+        --toastify-color-success: #07bc0c;
+        --toastify-color-warning: #f1c40f;
+        --toastify-color-error: #e74c3c;
+        --toastify-color-transparent: hsla(0,0%,100%,.7);
+        --toastify-text-color-light: #757575;
+        --toastify-text-color-dark: #fff;
+        --toastify-text-color-info: #fff;
+        --toastify-text-color-success: #fff;
+        --toastify-text-color-warning: #fff;
+        --toastify-text-color-error: #fff;
+        --toastify-spinner-color: #616161;
+        --toastify-color-progress-light: linear-gradient(90deg,#4cd964,#5ac8fa,#007aff,#34aadc,#5856d6,#ff2d55);
+        --toastify-color-progress-dark: #bb86fc;
+        --swiper-theme-color: #007aff;
+        --darkreader-bg--toastify-color-light: #242525;
+        --darkreader-bg--toastify-color-dark: #1a1b1a;
+        --darkreader-bg--toastify-color-info: #30719a;
+        --darkreader-bg--toastify-color-success: #1d901c;
+        --darkreader-bg--toastify-color-warning: #8f781c;
+        --darkreader-bg--toastify-color-error: #992f23;
+        --darkreader-bg--toastify-color-transparent: rgba(36, 37, 37, 0.7);
+        --toastify-icon-color-info: var(--toastify-color-info);
+        --toastify-icon-color-success: var(--toastify-color-success);
+        --toastify-icon-color-warning: var(--toastify-color-warning);
+        --toastify-icon-color-error: var(--toastify-color-error);
+        --toastify-toast-width: 320px;
+        --toastify-toast-background: #fff;
+        --toastify-toast-min-height: 64px;
+        --toastify-toast-max-height: 800px;
+        --toastify-font-family: sans-serif;
+        --toastify-z-index: 9999;
+        --darkreader-text--toastify-text-color-light: #9f9788;
+        --darkreader-text--toastify-text-color-dark: #e5e0d8;
+        --darkreader-text--toastify-text-color-info: #e5e0d8;
+        --darkreader-text--toastify-text-color-success: #e5e0d8;
+        --darkreader-text--toastify-text-color-warning: #e5e0d8;
+        --darkreader-text--toastify-text-color-error: #e5e0d8;
+        --darkreader-border--toastify-spinner-color: #71695d;
+        --toastify-spinner-color-empty-area: #e0e0e0;
+        --darkreader-bgimg--toastify-color-progress-light: linear-gradient(90deg, #349153, #1b6a8c, #1766b9, #307d9b, #302f84, #a3132d);
+        --darkreader-bg--toastify-color-progress-dark: #401372;
+        --toastify-color-progress-info: var(--toastify-color-info);
+        --toastify-color-progress-success: var(--toastify-color-success);
+        --toastify-color-progress-warning: var(--toastify-color-warning);
+        --toastify-color-progress-error: var(--toastify-color-error);
+        --darkreader-text--swiper-theme-color: #48a0e7;
+        --swiper-navigation-size: 44px;
+        font-size: var(--bs-body-font-size);
+        font-weight: var(--bs-body-font-weight);
+        line-height: var(--bs-body-line-height);
+        text-align: var(--bs-body-text-align);
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+        font-family: Noto Sans!important;
+        -webkit-font-smoothing: antialiased;
+        color: rgba(229, 224, 216, 0.85);
+        box-sizing: border-box;
+        display: flex;
+        -webkit-box-align: center;
+        align-items: center;
+        -webkit-box-pack: center;
+        justify-content: center;
+        height: 24px;
+        width: 24px;
+        cursor: pointer;
+        padding: 2px;
+        `
+        divForTheButton.appendChild(elementToAdd);
+        elementToAdd.addEventListener("click", async function () {
+          // If it's a mobile device
+          if (typeof screen.orientation !== 'undefined') {
+            dataToWriteToAFile = await seekForMessagesToExportInChat3();
+          } else {
+            dataToWriteToAFile = await seekForMessagesToExportInChat2();
+          }
+          var element = document.createElement('a');
+          element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(dataToWriteToAFile));
+          element.setAttribute('download', "messages.txt");
+          element.style.display = 'none';
+          document.body.appendChild(element);
+          element.click();
+          document.body.removeChild(element);
+        });
+        doesitexist.insertAdjacentElement("beforebegin", divForTheButton);
+        mutationObserverManipulationButtons.disconnect();
+      }
+    }
+  });
+});
+
+mutationObserverManipulationButtons.observe(document.body, {
+  childList: true,
+  subtree: true,
+});
