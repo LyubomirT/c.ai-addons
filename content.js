@@ -1342,6 +1342,7 @@ var fontSelect = document.createElement("select");
 fontSelect.id = "font-select";
 fontSelect.style.width = "80%";
 fontSelect.style.marginBottom = "10px";
+fontSelect.style.display = "block";
 
 // Create an array of pre-set Google Fonts
 var googleFonts = [
@@ -1427,6 +1428,31 @@ if (localStorage.getItem("newStyleEnabled") === "true") {
   newStyleToggle.checked = true;
 } else {
   newStyleToggle.checked = false;
+}
+
+br = document.createElement("br");
+
+chatExportToggle = document.createElement("input");
+chatExportToggle.type = "checkbox";
+chatExportToggle.id = "chat-export-toggle";
+chatExportToggle.style.marginRight = "5px";
+chatExportToggle.checked = false; // Disabled by default
+settingsPanel.appendChild(chatExportToggle);
+
+chatExportToggleLabel = document.createElement("label");
+chatExportToggleLabel.htmlFor = "chat-export-toggle";
+chatExportToggleLabel.textContent = "Enable Chat Export";
+settingsPanel.appendChild(chatExportToggleLabel);
+
+chatExportToggle.addEventListener("change", function () {
+  localStorage.setItem("chatExportEnabled", this.checked);
+  showMessage("Please reload the page for the changes to apply.");
+});
+
+if (localStorage.getItem("chatExportEnabled") === "true") {
+  chatExportToggle.checked = true;
+} else {
+  chatExportToggle.checked = false;
 }
 
 // When there's a new mutation in <body>, get all 'swiper-no-swiping' divs, then their parent, and set the parent's style to the specified style
@@ -2218,7 +2244,9 @@ mutationObserverManipulationButtons = new MutationObserver(function (mutations) 
   });
 });
 
-mutationObserverManipulationButtons.observe(document.body, {
-  childList: true,
-  subtree: true,
-});
+if (localStorage.getItem('chatExportEnabled') === 'true') {
+  mutationObserverManipulationButtons.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+}

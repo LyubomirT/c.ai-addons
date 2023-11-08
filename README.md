@@ -113,6 +113,19 @@ You will need to refresh the page after changing the font. Also, please notice t
 
 ![Font Override Preview](resources/markdown/fontpreview.PNG)
 
+## Chat Exporting
+
+This addon allows you to export your chat history. It can be enabled by enabling the "Enable Chat Exporting" option in the extension settings. After that, you can click on the "download" button in the toolbar, and it will download a .txt file with your chat history, using the same format as the one used by the chat scanner.
+
+First of all, you need to enable the "Enable Chat Exporting" option in the extension settings.
+
+![Chat Exporting Toggle](resources/markdown/enablece.png)
+
+After that, you need to refresh the page, and then you will see a new button in the toolbar, with a download icon. Clicking on it will download a .txt file with your chat history. The file will be named "messages.txt".
+
+![Chat Exporting Button](resources/markdown/ce.png)
+
+
 # Contributing
 
 Contributions are welcome! If you want to contribute, you can either open an issue, or create a pull request. If you want to create a pull request, please make sure to follow the [contribution guidelines](CONTRIBUTING.md).
