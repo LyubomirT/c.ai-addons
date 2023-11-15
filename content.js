@@ -1425,7 +1425,7 @@ if (localStorage.getItem("legacyChatsEnabled") === "true") {
 
 newStyleToggle.addEventListener("change", function () {
   localStorage.setItem("newStyleEnabled", this.checked);
-  showMessage("This feature doesn't work on legacy chats. Please reload the page for the changes to apply.");
+  showMessage("This feature only works partially on legacy chats. Please reload the page for the changes to apply.");
 });
 
 if (localStorage.getItem("newStyleEnabled") === "true") {
@@ -1478,7 +1478,16 @@ var observer222 = new MutationObserver(function (mutations) {
       // Get all images and make their corners rounded (if the user has enabled rounded avatars)
       var images = document.querySelectorAll("img");
       images.forEach(function (image) {
-        image.style.borderRadius = localStorage.getItem("roundedAvatars") === "true" ? "0" : "5px";
+        // image.style.borderRadius = localStorage.getItem("roundedAvatars") === "true" ? "0" : "5px";
+        if (localStorage.getItem("roundedAvatars") === "true") {
+          image.style.borderRadius = "0";
+        }
+        else if (localStorage.getItem("newStyleEnabled") === "false") {
+          image.style.borderRadius = "45px";
+        }
+        else {
+          image.style.borderRadius = "5px";
+        }
       });
       if (localStorage.getItem("differentFontEnabled") === "true") {
         document.body.style.fontFamily = localStorage.getItem("selectedFont");
@@ -1588,10 +1597,7 @@ function initLegacy() {
   });
 
   newLegacyChatButton.addEventListener("click", async function () {
-    if (localStorage.getItem("newStyleEnabled") === "true") {
-      alert("New Styles don't work on legacy chats! Please disable it from the settings to proceed.");
-      return;
-    } else if (localStorage.getItem("chatExportEnabled") === "true") {
+    if (localStorage.getItem("chatExportEnabled") === "true") {
       alert("Chat Export doesn't work on legacy chats! Please disable it from the settings to proceed.");
       return;
     }
