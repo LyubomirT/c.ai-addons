@@ -1421,7 +1421,7 @@ if (localStorage.getItem("legacyChatsEnabled") === "true") {
 
 newStyleToggle.addEventListener("change", function () {
   localStorage.setItem("newStyleEnabled", this.checked);
-  showMessage("Please reload the page for the changes to apply.");
+  showMessage("This feature doesn't work on legacy chats. Please reload the page for the changes to apply.");
 });
 
 if (localStorage.getItem("newStyleEnabled") === "true") {
@@ -1461,6 +1461,9 @@ var observer222 = new MutationObserver(function (mutations) {
     if (mutation.type == "childList" && mutation.addedNodes.length > 0 && localStorage.getItem("newStyleEnabled") === "true") {
       var swipers = document.querySelectorAll(".swiper-no-swiping");
       swipers.forEach(function (swiper) {
+        if (window.location.href.includes("/chat?char=")) {
+          return;
+        }
         var parent = swiper.parentElement;
         // Make the corners rounded (8px) except the top-left corner
         parent.style.borderRadius = "0 8px 8px 8px";
@@ -1582,6 +1585,13 @@ function initLegacy() {
   });
 
   newLegacyChatButton.addEventListener("click", async function () {
+    if (localStorage.getItem("newStyleEnabled") === "true") {
+      alert("New Styles don't work on legacy chats! Please disable it from the settings to proceed.");
+      return;
+    } else if (localStorage.getItem("chatExportEnabled") === "true") {
+      alert("Chat Export doesn't work on legacy chats! Please disable it from the settings to proceed.");
+      return;
+    }
     const n = new URLSearchParams(window.location.search).get("char");
     if (!n) {
       alert("You are not on a character page!");
