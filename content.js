@@ -1348,7 +1348,7 @@ fontSelect.style.width = "80%";
 fontSelect.style.marginBottom = "10px";
 fontSelect.style.display = "block";
 
-// Create an array of pre-set Google Fonts
+// Create an array of pre-set Google Fonts (now with serif as well)
 var googleFonts = [
   "Arial",
   "Roboto",
@@ -1360,6 +1360,16 @@ var googleFonts = [
   "Ubuntu",
   "Poppins",
   "Source Sans Pro",
+  // Serif
+  "Times New Roman",
+  "Georgia",
+  "Palatino Linotype",
+  "Bookman Old Style",
+  "Book Antiqua",
+  "Lucida Bright",
+  "Cambria",
+  "Garamond",
+  "Big Caslon",
 ];
 
 // Populate the select element with pre-set fonts

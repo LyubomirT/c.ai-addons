@@ -106,6 +106,15 @@ If you don't like the default font, you can change it by enabling the "Enable Di
 - Ubuntu
 - Noto Sans
 - Source Sans Pro
+- Times New Roman
+- Georgia
+- Palatino Linotype
+- Bookman Old Style
+- Book Antiqua
+- Lucida Bright
+- Cambria
+- Garamond
+- Big Caslon
 
 You will need to refresh the page after changing the font. Also, please notice that the font might have a different width, and might slightly break the UI (but it's not that bad).
 
