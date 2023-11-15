@@ -135,6 +135,7 @@ function initMemoryManager() {
         button.style.padding = "5px";
         button.style.paddingLeft = "10px";
         button.style.paddingRight = "10px";
+        button.style.color = "white";
         button.id = buttons[j] + "-" + fields[i] + "-memory-button";
         button.textContent =
           buttons[j].charAt(0).toUpperCase() + buttons[j].slice(1) + " memory";
@@ -383,6 +384,7 @@ color: white;
     insertButton.style.border = "none";
     insertButton.style.marginTop = "30px !important";
     insertButton.style.width = "80%";
+    insertButton.style.color = "white";
     insertButton.addEventListener("click", function () {
       insertMemoryString();
     });
@@ -399,6 +401,7 @@ color: white;
     importButton.style.border = "none";
     importButton.style.marginTop = "10px";
     importButton.style.width = "80%";
+    importButton.style.color = "white";
     importButton.addEventListener("click", function () {
       openImportDialog();
     });
@@ -417,6 +420,7 @@ color: white;
     scanButton.style.width = "80%";
     scanButton.style.color = "white";
     scanButton.style.cursor = "pointer";
+    scanButton.style.color = "white";
     scanButton.addEventListener("click", scanMessages);
     DIVFORTHEINSERTBUTTON.appendChild(scanButton);
 
@@ -1567,7 +1571,6 @@ function initLegacy() {
   newLegacyChatButton.style.color = "#333";
   newLegacyChatButton.style.padding = "5px 10px";
   newLegacyChatButton.style.backgroundColor = "#e0e0e0";
-  newLegacyChatButton.style.color = "white";
   newLegacyChatButton.style.border = "none";
   newLegacyChatButton.style.cursor = "pointer";
   newLegacyChatButton.style.zIndex = "9997";
