@@ -1,13 +1,14 @@
 {
     "manifest_version": 3,
     "name": "C.AI Addons",
-    "version": "0.4.0",
+    "version": "0.4.6",
     "description": "A browser extension that adds some features to character.ai",
     "icons": {
       "16": "icon16.png",
       "32": "icon32.png"
     },
     "action": {
+      "default_popup": "popup.html",
       "default_icon": {
         "16": "icon16.png",
         "32": "icon32.png"
