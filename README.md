@@ -16,7 +16,7 @@ For Firefox, installation steps differ a bit. Here's how to install the extensio
 1. Download the latest release for Firefox from the [releases page](https://github.com/LyubomirT/c.ai-addons/releases).
 2. Open Firefox and go to `about:extensions`, basically the extensions page.
 3. Click on the gear icon in the top right corner, and select "Install Add-on From File".
-4. Select the downloaded `.xpi`` file, and click "Open".
+4. Select the downloaded `.xpi` file, and click "Open".
 5. Click "Add" in the prompt that appears.
 
 # Usage
