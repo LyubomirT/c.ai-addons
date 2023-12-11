@@ -145,6 +145,22 @@ After that, you need to refresh the page, and then you will see a new button in 
 
 ![Chat Exporting Button](resources/markdown/ce.png)
 
+## Markdown Toolbar
+
+Character.ai supports markdown, but some users may not be proficient in it or know it at all. This addon adds a small toolbar for basic Markdown formatting. It can be enabled by enabling the "Enable Markdown Toolbar" option in the extension settings. After reloading the page, you'll notice that there is a new toolbar above your message box. It looks like this:
+
+![Markdown Toolbar](resources/markdown/mtb.png)
+
+The toolbar currently has buttons for making the text **Bold**, *Italic*, `Code`, and wrapped in a blockquote. Soon I'm planning to add more buttons, but I want to note that not all markdown features are supported by Character.ai.
+
+You can use each of the buttons in 3 ways:
+
+1. If you click the button with some text selected in the message box, it will wrap the selected text in the markdown tag. For example, if you select some text and click the "Bold" button, it will wrap the selected text in `**` tags. However, the blockquote only adds the `>` symbol at the beginning of the selected line.
+2. If you click the button without selecting any text, it will insert the markdown tag at the cursor position. For example, if you click the "Bold" button without selecting any text, it will insert `** **` at the cursor position.
+3. If you click the button while the cursor is inside a markdown tag, it will remove the markdown tag. For example, if you click the "Bold" button while the cursor is inside `** **`, it will remove the `** **` tags.
+
+Unfortunately, this setting has a side effect. With it, you can't resize the messagebox by dragging its corner. This is because of the way Character.ai handles box resizing and "smoothing". I'm planning to fix this in the future.
+
 
 # Contributing
 

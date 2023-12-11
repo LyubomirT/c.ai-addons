@@ -1486,7 +1486,7 @@ settingsPanel.appendChild(basicMarkdownToggle);
 
 basicMarkdownToggleLabel = document.createElement("label");
 basicMarkdownToggleLabel.htmlFor = "basic-markdown-toggle";
-basicMarkdownToggleLabel.textContent = "Enable Markdown Suggestions";
+basicMarkdownToggleLabel.textContent = "Enable Markdown Toolbar";
 settingsPanel.appendChild(basicMarkdownToggleLabel);
 
 basicMarkdownToggle.addEventListener("change", function () {
