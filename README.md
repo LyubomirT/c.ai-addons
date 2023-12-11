@@ -50,7 +50,7 @@ There are also other Memory String controls, like the ones shown below:
 
 ### Inserting a Memory String
 
-Below the Memory String controls, there is a button, saying "Insert Memory String". Clicking on it will insert the memory string into the message box. NOTE that it's recommended to hit Shift+Enter while focusing on the messagebox after inserting it, because otherwise it might break the message.
+Below the Memory String controls, there is a button, saying "Insert Memory String". Clicking on it will insert the memory string into the message box.
 
 If you don't want to use the button, simply copy-paste the memory string from the previewer into the message box.
 
