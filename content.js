@@ -322,6 +322,10 @@ function initMemoryManager() {
 
       // insert the memory string to the user input textarea with a newline
       userInputTextarea.value = memoryString + "\n\n" + userInputTextarea.value;
+
+      // Trigger the input event to avoid glitches
+      var inputEvent = new Event("input", {"bubbles": true});
+      userInputTextarea.dispatchEvent(inputEvent);
     }
 
     function handleSubmit(event) {
@@ -1469,6 +1473,33 @@ if (localStorage.getItem("chatExportEnabled") === "true") {
   chatExportToggle.checked = false;
 }
 
+br = document.createElement("br");
+
+settingsPanel.appendChild(br);
+
+basicMarkdownToggle = document.createElement("input");
+basicMarkdownToggle.type = "checkbox";
+basicMarkdownToggle.id = "basic-markdown-toggle";
+basicMarkdownToggle.style.marginRight = "5px";
+basicMarkdownToggle.checked = false; // Disabled by default
+settingsPanel.appendChild(basicMarkdownToggle);
+
+basicMarkdownToggleLabel = document.createElement("label");
+basicMarkdownToggleLabel.htmlFor = "basic-markdown-toggle";
+basicMarkdownToggleLabel.textContent = "Enable Markdown Suggestions";
+settingsPanel.appendChild(basicMarkdownToggleLabel);
+
+basicMarkdownToggle.addEventListener("change", function () {
+  localStorage.setItem("basicMarkdownEnabled", this.checked);
+  showMessage("Please reload the page for the changes to apply. ALSO NOTE: The textarea will not be resizable if this is enabled.");
+});
+
+if (localStorage.getItem("basicMarkdownEnabled") === "true") {
+  basicMarkdownToggle.checked = true;
+} else {
+  basicMarkdownToggle.checked = false;
+}
+
 // When there's a new mutation in <body>, get all 'swiper-no-swiping' divs, then their parent, and set the parent's style to the specified style
 var observer222 = new MutationObserver(function (mutations) {
   mutations.forEach(function (mutation) {
@@ -2279,3 +2310,260 @@ if (localStorage.getItem('chatExportEnabled') === 'true') {
     subtree: true,
   });
 }
+
+function basicMarkdownRender() {
+  function createMarkdownTool() {
+    basicMarkdownTest = document.createElement("div");
+
+    // Add a font-awesome import to the head
+    var head = document.head;
+    var link = document.createElement("link");
+    link.type = "text/css";
+    link.rel = "stylesheet";
+    link.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css";
+    head.appendChild(link);
+
+    basicMarkdownTest.innerHTML = `
+      <button class="md-tool" id="md-bold" title="Bold" type="button"><i class="fas fa-bold"></i></button>
+      <button class="md-tool" id="md-italic" title="Italic" type="button"><i class="fas fa-italic"></i></button>
+      <button class="md-tool" id="md-code" title="Code" type="button"><i class="fas fa-code"></i></button>
+      <button class="md-tool" id="md-quote" title="Quote" type="button"><i class="fas fa-quote-right"></i></button>
+    `;
+
+    var userInputElement = document.getElementById("user-input");
+
+    if (!userInputElement) {
+      setTimeout(createMarkdownTool, 1000);
+      return;
+    }
+
+    // userInputElement.parentNode.insertBefore(basicMarkdownTest, userInputElement);
+    document.body.appendChild(basicMarkdownTest);
+
+    mdtools = document.querySelectorAll(".md-tool");
+    for (var i = 0; i < mdtools.length; i++) {
+      mdtools[i].style.color = "#d6d0c6";
+      mdtools[i].style.backgroundColor = "transparent";
+      mdtools[i].style.border = "none";
+      mdtools[i].style.padding = "0";
+      mdtools[i].style.margin = "0";
+      mdtools[i].style.fontSize = "1rem";
+      mdtools[i].style.cursor = "pointer";
+      mdtools[i].style.width = "30px";
+      mdtools[i].style.height = "30px";
+      mdtools[i].style.borderRadius = "4px";
+    }
+
+    basicMarkdownTest.classList.add("md-toolbar");
+    basicMarkdownTest.style.position = "fixed";
+    basicMarkdownTest.style.top = "89vh";
+    basicMarkdownTest.style.left = "45%";
+    basicMarkdownTest.style.zIndex = "1000";
+    basicMarkdownTest.style.backgroundColor = "#353535";
+    basicMarkdownTest.style.borderRadius = "4px";
+    basicMarkdownTest.style.padding = "7px";
+    basicMarkdownTest.style.transition = "top 0.1s ease-in-out";
+
+    // Add styles for hover animation
+    var style = document.createElement("style");
+    style.innerHTML = `
+      .md-tool:hover {
+        background-color: #c2c2c2 !important; /* Change the background color on hover */
+        transition: background-color 0.1s ease-in-out;
+      }
+    `;
+    setTimeout(async function () {
+      document.head.appendChild(style);
+    }, 100);
+
+    function moveTestUp(yOffset) {
+      basicMarkdownTest.style.top = `${yOffset}vh`;
+    }
+
+    document.getElementById("user-input").addEventListener("input", function () {
+      var textarea = document.getElementById("user-input");
+      var yOffset;
+
+      if (textarea.value === "") {
+        yOffset = 89;
+      } else {
+        var lines = textarea.value.split("\n");
+        yOffset = 91 - (lines.length * 2.15);
+
+        if (lines.length <= 1) {
+          yOffset = 89;
+        }
+      }
+
+      moveTestUp(yOffset);
+    });
+
+    document.getElementById("md-bold").addEventListener("click", function () {
+      var textarea = document.getElementById("user-input");
+      var selectionStart = textarea.selectionStart;
+      var selectionEnd = textarea.selectionEnd;
+      var selectedText = textarea.value.substring(selectionStart, selectionEnd);
+      var textBeforeSelection = textarea.value.substring(0, selectionStart);
+      var textAfterSelection = textarea.value.substring(selectionEnd, textarea.value.length);
+    
+      if (selectedText === "") {
+        textarea.value = `${textBeforeSelection}** **${textAfterSelection}`;
+        textarea.setSelectionRange(selectionStart + 3, selectionStart + 3);
+      } else {
+        if (selectedText.startsWith("**") && selectedText.endsWith("**")) {
+          textarea.value = `${textBeforeSelection}${selectedText.substring(2, selectedText.length - 2)}${textAfterSelection}`;
+          textarea.setSelectionRange(selectionStart, selectionEnd - 4);
+        } else {
+          textarea.value = `${textBeforeSelection}**${selectedText}**${textAfterSelection}`;
+          textarea.setSelectionRange(selectionStart, selectionEnd + 4);
+        }
+      }
+    
+      // Trigger the input event by calling the input method
+      var inputEvent = new Event("input", { bubbles: true });
+      textarea.dispatchEvent(inputEvent);
+    });
+    
+    
+
+    // If the italic button is clicked, check if the user has selected text in the textarea. If so, wrap the selected text in _. Otherwise, insert _ _ into the textarea.
+    // If the selection is already italic, remove the first and last _.
+    document.getElementById("md-italic").addEventListener("click", function () {
+      var textarea = document.getElementById("user-input");
+      var selectionStart = textarea.selectionStart;
+      var selectionEnd = textarea.selectionEnd;
+      var selectedText = textarea.value.substring(selectionStart, selectionEnd);
+      var textBeforeSelection = textarea.value.substring(0, selectionStart);
+      var textAfterSelection = textarea.value.substring(selectionEnd, textarea.value.length);
+
+      if (selectedText === "") {
+        textarea.value = `${textBeforeSelection}_ _${textAfterSelection}`;
+        textarea.selectionStart = selectionStart + 1;
+        textarea.selectionEnd = selectionStart + 1;
+      } else {
+        if (selectedText.startsWith("_") && selectedText.endsWith("_")) {
+          textarea.value = `${textBeforeSelection}${selectedText.substring(1, selectedText.length - 1)}${textAfterSelection}`;
+          textarea.selectionStart = selectionStart;
+          textarea.selectionEnd = selectionEnd - 2;
+        } else {
+          textarea.value = `${textBeforeSelection}_${selectedText}_${textAfterSelection}`;
+          textarea.selectionStart = selectionStart;
+          textarea.selectionEnd = selectionEnd + 2;
+        }
+      }
+
+      // Trigger the input event by calling the input method
+      var inputEvent = new Event("input", { bubbles: true });
+      textarea.dispatchEvent(inputEvent);
+    });
+
+    // If the code button is clicked, check if the user has selected text in the textarea. If so, wrap the selected text in `. Otherwise, insert ` ` into the textarea.
+    // If the selection is already code, remove the first and last `.
+    document.getElementById("md-code").addEventListener("click", function () {
+      var textarea = document.getElementById("user-input");
+      var selectionStart = textarea.selectionStart;
+      var selectionEnd = textarea.selectionEnd;
+      var selectedText = textarea.value.substring(selectionStart, selectionEnd);
+      var textBeforeSelection = textarea.value.substring(0, selectionStart);
+      var textAfterSelection = textarea.value.substring(selectionEnd, textarea.value.length);
+
+      if (selectedText === "") {
+        textarea.value = `${textBeforeSelection}\`\`${textAfterSelection}`;
+        textarea.selectionStart = selectionStart + 1;
+        textarea.selectionEnd = selectionStart + 1;
+      } else {
+        if (selectedText.startsWith("`") && selectedText.endsWith("`")) {
+          textarea.value = `${textBeforeSelection}${selectedText.substring(1, selectedText.length - 1)}${textAfterSelection}`;
+          textarea.selectionStart = selectionStart;
+          textarea.selectionEnd = selectionEnd - 2;
+        } else {
+          textarea.value = `${textBeforeSelection}\`${selectedText}\`${textAfterSelection}`;
+          textarea.selectionStart = selectionStart;
+          textarea.selectionEnd = selectionEnd + 2;
+        }
+      }
+
+      // Trigger the input event by calling the input method
+      var inputEvent = new Event("input", { bubbles: true });
+      textarea.dispatchEvent(inputEvent);
+    });
+
+    // If the quote button is clicked, check if the user has selected text in the textarea. If so, put > before each line of the selected text. Otherwise, insert > before the current line.
+    // If the selection is already quoted, remove the first > from each line.
+    document.getElementById("md-quote").addEventListener("click", function () {
+      var textarea = document.getElementById("user-input");
+      var selectionStart = textarea.selectionStart;
+      var selectionEnd = textarea.selectionEnd;
+      var selectedText = textarea.value.substring(selectionStart, selectionEnd);
+      var textBeforeSelection = textarea.value.substring(0, selectionStart);
+      var textAfterSelection = textarea.value.substring(selectionEnd, textarea.value.length);
+
+      if (selectedText === "") {
+        var lines = textarea.value.split("\n");
+        var newLines = [];
+
+        for (var i = 0; i < lines.length; i++) {
+          newLines.push(`> ${lines[i]}`);
+        }
+
+        textarea.value = `${textBeforeSelection}${newLines.join("\n")}${textAfterSelection}`;
+        textarea.selectionStart = selectionStart + 2;
+        textarea.selectionEnd = selectionStart + 2;
+      } else {
+        var lines = selectedText.split("\n");
+        var newLines = [];
+
+        for (var i = 0; i < lines.length; i++) {
+          if (lines[i].startsWith("> ")) {
+            newLines.push(lines[i].substring(2, lines[i].length));
+          } else {
+            newLines.push(`> ${lines[i]}`);
+          }
+        }
+
+        textarea.value = `${textBeforeSelection}${newLines.join("\n")}${textAfterSelection}`;
+        textarea.selectionStart = selectionStart;
+        textarea.selectionEnd = selectionEnd + (newLines.length * 2);
+
+        // Trigger the input event by calling the input method
+        var inputEvent = new Event("input", { bubbles: true });
+        textarea.dispatchEvent(inputEvent);
+      }
+    });
+
+
+    // Create a new promise-based ASYNC function with a loop. If the user input element is missing, hide the toolbar. Otherwise, show it.
+    async function checkForUserInputElement() {
+      while (true) {
+        if (!document.getElementById("user-input")) {
+          basicMarkdownTest.style.display = "none";
+        } else {
+          basicMarkdownTest.style.display = "block";
+          // Make the textarea non-resizable
+          document.getElementById("user-input").style.resize = "none";
+        }
+
+        // Introduce a delay before the next iteration
+        await new Promise(r => setTimeout(r, 1000));
+      }
+    }
+
+    // Run the function asynchronously
+    checkForUserInputElement().catch(error => {
+      // Handle any errors that might occur during the execution
+      console.error("Error:", error);
+    });
+
+
+
+
+  }
+
+  createMarkdownTool();
+}
+
+if (localStorage.getItem('basicMarkdownEnabled') === 'true') {
+  basicMarkdownRender();
+}
+
+
