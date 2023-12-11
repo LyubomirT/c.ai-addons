@@ -250,6 +250,9 @@ function initMemoryManager() {
       }
 
       document.getElementById("memory-display").value = memoryString;
+      if (localStorage.getItem("autoSaveEnabled") === "true") {
+        localStorage.setItem("memoryString", memoryString);
+      }
     }
 
     function importMemoryString(memoryString) {
@@ -312,6 +315,10 @@ function initMemoryManager() {
       }
     
       updateMemoryString(); // Update the displayed memory string
+    }
+
+    if (localStorage.getItem("memoryString") !== null && localStorage.getItem("autoSaveEnabled") === "true") {
+      importMemoryString(localStorage.getItem("memoryString"));
     }
     
 
@@ -410,6 +417,53 @@ color: white;
       openImportDialog();
     });
     DIVFORTHEINSERTBUTTON.appendChild(importButton);
+
+    var clearButton = document.createElement("button");
+    clearButton.innerText = "Clear Memory String";
+    clearButton.style.backgroundImage =
+      "linear-gradient(to right, #00c6ff, #0072ff)";
+    clearButton.style.padding = "10px";
+    clearButton.style.justifyContent = "center";
+    clearButton.style.alignItems = "center";
+    clearButton.style.borderRadius = "5px";
+    clearButton.style.border = "none";
+    clearButton.style.marginTop = "10px";
+    clearButton.style.width = "80%";
+    clearButton.style.color = "white";
+    clearButton.addEventListener("click", function () {
+      clearMemoryString();
+    });
+
+    DIVFORTHEINSERTBUTTON.appendChild(clearButton);
+
+    function clearMemoryString() {
+      var characterMemorySelect = document.getElementById(
+        "character-memory-select"
+      );
+      var userMemorySelect = document.getElementById("user-memory-select");
+
+      // Clear existing memory options
+      characterMemorySelect.innerHTML =
+        '<option value="" disabled selected>--Select a memory--</option>';
+      
+      userMemorySelect.innerHTML =
+        '<option value="" disabled selected>--Select a memory--</option>';
+      
+      // Hide remove buttons
+      document.getElementById(
+        "remove-character-memory-button"
+      ).style.display = "none";
+
+      document.getElementById(
+        "remove-user-memory-button"
+      ).style.display = "none";
+
+      document.getElementById("memory-display").value = "";
+
+      if (localStorage.getItem("autoSaveEnabled") === "true") {
+        localStorage.removeItem("memoryString");
+      }
+    }
 
     // Add a "Scan" button to trigger the message scanning process
     var scanButton = document.createElement("button");
@@ -1277,6 +1331,37 @@ settingsPanel.appendChild(memoryToggleLabel);
 var br = document.createElement("br");
 settingsPanel.appendChild(br);
 
+// create a toggle button for enabling/disabling automatic memory string saving
+var autoSaveToggle = document.createElement("input");
+autoSaveToggle.type = "checkbox";
+autoSaveToggle.id = "auto-save-toggle";
+autoSaveToggle.style.marginRight = "5px";
+autoSaveToggle.checked = true; // Enabled by default
+settingsPanel.appendChild(autoSaveToggle);
+
+var autoSaveToggleLabel = document.createElement("label");
+autoSaveToggleLabel.htmlFor = "auto-save-toggle";
+autoSaveToggleLabel.textContent = "Enable Autosave";
+settingsPanel.appendChild(autoSaveToggleLabel);
+
+autoSaveToggle.addEventListener("change", function () {
+  localStorage.setItem("autoSaveEnabled", this.checked);
+});
+
+// if the memory manager is disabled, disable the autosave toggle
+if (localStorage.getItem("memoryManagerEnabled") === "false") {
+  autoSaveToggle.disabled = true;
+}
+
+if (localStorage.getItem("autoSaveEnabled") === "true") {
+  autoSaveToggle.checked = true;
+} else {
+  autoSaveToggle.checked = false;
+}
+
+var br = document.createElement("br");
+settingsPanel.appendChild(br);
+
 // create a toggle for enabling/disabling rounded avatars
 var roundedAvatarsToggle = document.createElement("input");
 roundedAvatarsToggle.type = "checkbox";
@@ -1554,6 +1639,12 @@ memoryToggle.addEventListener("change", function () {
 
   // Save the enabled/disabled state in localStorage
   localStorage.setItem("memoryManagerEnabled", memoryManagerEnabled);
+
+  if (memoryManagerEnabled) {
+    autoSaveToggle.disabled = false;
+  } else {
+    autoSaveToggle.disabled = true;
+  }
 
   // Show a message indicating the changes were applied
   showMessage("Please reload the page for the changes to apply.");
