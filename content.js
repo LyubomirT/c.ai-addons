@@ -2375,7 +2375,7 @@ mutationObserverManipulationButtons = new MutationObserver(function (mutations) 
         divForTheButton.appendChild(elementToAdd);
         elementToAdd.addEventListener("click", async function () {
           // If it's a mobile device
-          if (typeof screen.orientation !== 'undefined') {
+          if ('ontouchstart' in window || navigator.maxTouchPoints) {
             dataToWriteToAFile = await seekForMessagesToExportInChat3();
           } else {
             dataToWriteToAFile = await seekForMessagesToExportInChat2();
