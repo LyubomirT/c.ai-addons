@@ -6,7 +6,7 @@
         @import url(https://fonts.googleapis.com/css?family=Ubuntu:400,300,500);
         body {
             width: 500px;
-            height: 500px;
+            height: 450px;
             font-family: 'Ubuntu', sans-serif;
             font-weight: 300;
             color: white;
@@ -32,12 +32,37 @@
             font-size: 10px;
             margin-top: 20px;
         }
+
+        #update-warn {
+            font-size: 14px;
+            margin-top: 20px;
+            color: #ff0000;
+        }
+
+        #updateButton {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background: #ff0000;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
     </style>
+    <script src="checkforupdate.js"></script>
 </head>
 <body>
     <h1>Need help? See our <a href="https://lyubomirt.github.io/c.ai-addons/" target="_blank">documentation</a>!</h1>
     <p>This is an open-source project started by <a href="https://lyubomirt.github.io/" target="_blank">LyubomirT</a>. Our goal is to provide a free and open-source alternative to the commercial addons for the Character.ai platform. Of course, the project would not be possible without the help of the community. If you want to contribute, please visit our <a href="https://github.com/LyubomirT/c.ai-addons" target="_blank">GitHub repository</a>.</p>
     <b><p>Thank you for using C.AI Addons!</p></b>
     <p id="disclaimer">We are not affiliated, associated, authorized, endorsed by, or in any way officially connected with Character.ai, or any of its subsidiaries or its affiliates.</p>
+    <!-- Divider -->
+    <hr>
+    <p>Current version: <b id="currentVersion">0.5.0</b></p>
+    <p>Latest version: <b id="latestVersion"></b></p>
+    <p id="update-warn"></p>
+    <button id="updateButton">Check for updates</button>
 </body>
 </html>
