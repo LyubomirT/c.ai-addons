@@ -729,7 +729,7 @@ color: white;
 
     async function scanChat2Messages() {
 
-      if (typeof screen.orientation !== 'undefined') {
+      if ('ontouchstart' in window || navigator.maxTouchPoints) {
         scanChat3Messages();
         return;
       }
