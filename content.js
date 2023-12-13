@@ -2419,6 +2419,7 @@ function basicMarkdownRender() {
       <button class="md-tool" id="md-italic" title="Italic" type="button"><i class="fas fa-italic"></i></button>
       <button class="md-tool" id="md-code" title="Code" type="button"><i class="fas fa-code"></i></button>
       <button class="md-tool" id="md-quote" title="Quote" type="button"><i class="fas fa-quote-right"></i></button>
+      <button class="md-tool" id="md-link" title="Link" type="button"><i class="fas fa-link"></i></button>
     `;
 
     var userInputElement = document.getElementById("user-input");
@@ -2622,6 +2623,36 @@ function basicMarkdownRender() {
       }
     });
 
+    // If the link button is clicked, check if the user has selected text in the textarea. If so, wrap the selected text in [text](url). Otherwise, insert [text](url) into the textarea.
+    // If the selection is already a link (check with regex), remove the first and last [] and () with the url, but keep the text.
+    document.getElementById("md-link").addEventListener("click", function () {
+      var textarea = document.getElementById("user-input");
+      var selectionStart = textarea.selectionStart;
+      var selectionEnd = textarea.selectionEnd;
+      var selectedText = textarea.value.substring(selectionStart, selectionEnd);
+      var textBeforeSelection = textarea.value.substring(0, selectionStart);
+      var textAfterSelection = textarea.value.substring(selectionEnd, textarea.value.length);
+
+      if (selectedText === "") {
+        textarea.value = `${textBeforeSelection}[text](url)${textAfterSelection}`;
+        textarea.selectionStart = selectionStart + 1;
+        textarea.selectionEnd = selectionStart + 5;
+      } else {
+        if (/\[.*\]\(.*\)/.test(selectedText)) {
+          textarea.value = `${textBeforeSelection}${selectedText.substring(1, selectedText.indexOf("]("))}${textAfterSelection}`;
+          textarea.selectionStart = selectionStart;
+          textarea.selectionEnd = selectionEnd - (selectedText.length - selectedText.indexOf("](") - 1);
+        } else {
+          textarea.value = `${textBeforeSelection}[${selectedText}](url)${textAfterSelection}`;
+          textarea.selectionStart = selectionStart;
+          textarea.selectionEnd = selectionEnd + 5;
+        }
+      }
+
+      // Trigger the input event by calling the input method
+      var inputEvent = new Event("input", { bubbles: true });
+      textarea.dispatchEvent(inputEvent);
+    });
 
     // Create a new promise-based ASYNC function with a loop. If the user input element is missing, hide the toolbar. Otherwise, show it.
     async function checkForUserInputElement() {
