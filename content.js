@@ -493,7 +493,7 @@ color: white;
     var currentlySelectedModel = "command";
 
     // Add options to the select element
-    modelSelect.innerHTML = `<option value="command">Normal (Higher Quality, Slower)</option><option value="command-light">Fast (Lower Quality, Faster)</option>`;
+    modelSelect.innerHTML = `<option value="command">Normal (Higher Quality, Slower)</option><option value="command-light">Fast (Lower Quality, Faster)</option><option value="command-light-nightly">Small Nightly (Experimental, Fast)</option>`;
 
     modelSelect.addEventListener("change", function () {
       currentlySelectedModel = modelSelect.value;

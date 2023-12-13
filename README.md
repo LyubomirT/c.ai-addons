@@ -62,7 +62,7 @@ If you already have a memory string, you can import it by clicking on the "Impor
 
 If you don't want to manually create a memory string, you can use the "Generate Automatically" button. This will automatically generate a memory string based on the current chat state. The process can sometimes be a bit slow, and it's not 100% accurate.
 
-You can also switch between the "Fast" and "Normal" models. Fast can save you some time, but it's not as accurate as the normal model, while the normal model is more accurate, but slower.
+You can also switch between the "Fast", "Small Nightly", and "Normal" models. Fast can save you some time, but it's not as accurate as the normal model, while the normal model is more accurate, but slower. Small Nigthly is currently the fastest model and relatively accurate, but it's not recommended to use it, as it's still in development by Cohere.
 
 ### Opening or Closing the Memory Manager
 
