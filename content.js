@@ -1585,6 +1585,28 @@ if (localStorage.getItem("basicMarkdownEnabled") === "true") {
   basicMarkdownToggle.checked = false;
 }
 
+br = document.createElement("br");
+
+settingsPanel.appendChild(br);
+
+// Create a toggle for deleting the "Get C.AI+" button
+var deleteGetCaiButtonToggle = document.createElement("input");
+deleteGetCaiButtonToggle.type = "checkbox";
+deleteGetCaiButtonToggle.id = "delete-get-cai-button-toggle";
+deleteGetCaiButtonToggle.style.marginRight = "5px";
+deleteGetCaiButtonToggle.checked = false; // Disabled by default
+settingsPanel.appendChild(deleteGetCaiButtonToggle);
+
+var deleteGetCaiButtonToggleLabel = document.createElement("label");
+deleteGetCaiButtonToggleLabel.htmlFor = "delete-get-cai-button-toggle";
+deleteGetCaiButtonToggleLabel.textContent = "Delete \"Get C.AI+\" Button";
+settingsPanel.appendChild(deleteGetCaiButtonToggleLabel);
+
+deleteGetCaiButtonToggle.addEventListener("change", function () {
+  localStorage.setItem("deleteGetCaiButtonEnabled", this.checked);
+  showMessage("Please reload the page for the changes to apply.");
+});
+
 // When there's a new mutation in <body>, get all 'swiper-no-swiping' divs, then their parent, and set the parent's style to the specified style
 var observer222 = new MutationObserver(function (mutations) {
   mutations.forEach(function (mutation) {
@@ -2688,4 +2710,25 @@ if (localStorage.getItem('basicMarkdownEnabled') === 'true') {
   basicMarkdownRender();
 }
 
+function ifthereisonedeleteit() {
+  // Create a mutation observer to seek for "shine-btn" (class) button in the whole body. if there is one, delete it.
+  var mutationObserverDeleteGetCaiButton = new MutationObserver(function (mutations) {
+    mutations.forEach(function (mutation) {
+      if (mutation.addedNodes.length) {
+        if (document.getElementsByClassName("shine-btn").length) {
+          document.getElementsByClassName("shine-btn")[0].remove();
+        }
+      }
+    });
+  });
 
+  mutationObserverDeleteGetCaiButton.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+}
+
+
+if (localStorage.getItem('deleteGetCaiButtonEnabled') === 'true') {
+  ifthereisonedeleteit();
+}
