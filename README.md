@@ -151,7 +151,7 @@ Character.ai supports markdown, but some users may not be proficient in it or kn
 
 ![Markdown Toolbar](resources/markdown/mtb.png)
 
-The toolbar currently has buttons for making the text **Bold**, *Italic*, `Code`, and wrapped in a blockquote. Soon I'm planning to add more buttons, but I want to note that not all markdown features are supported by Character.ai.
+The toolbar currently has buttons for making the text **Bold**, *Italic*, `Code`, [Link](https://character.ai/), and wrapped in a blockquote. Soon I'm planning to add more buttons, but I want to note that not all markdown features are supported by Character.ai.
 
 You can use each of the buttons in 3 ways:
 
@@ -160,6 +160,14 @@ You can use each of the buttons in 3 ways:
 3. If you click the button while the cursor is inside a markdown tag, it will remove the markdown tag. For example, if you click the "Bold" button while the cursor is inside `** **`, it will remove the `** **` tags.
 
 Unfortunately, this setting has a side effect. With it, you can't resize the messagebox by dragging its corner. This is because of the way Character.ai handles box resizing and "smoothing". I'm planning to fix this in the future.
+
+## Delete the "Get C.AI+" Button
+
+Free users may find the "Get C.AI+" button annoying, as it's always there, and the only thing you can do to get rid of it is to buy C.AI+. This addon removes the button, and it can be enabled by enabling the "Remove Get C.AI+ Button" option in the extension settings. After reloading the page, you'll notice that the button is gone. Doesn't work if you already have C.AI+.
+
+![Get C.AI+ Button](resources/markdown/deletecaiplus.png)
+
+![Get C.AI+ Button Gone](resources/markdown/caiplusgone.png)
 
 
 # Contributing
