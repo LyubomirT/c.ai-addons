@@ -1607,6 +1607,12 @@ deleteGetCaiButtonToggle.addEventListener("change", function () {
   showMessage("Please reload the page for the changes to apply.");
 });
 
+if (localStorage.getItem("deleteGetCaiButtonEnabled") === "true") {
+  deleteGetCaiButtonToggle.checked = true;
+} else {
+  deleteGetCaiButtonToggle.checked = false;
+}
+
 // When there's a new mutation in <body>, get all 'swiper-no-swiping' divs, then their parent, and set the parent's style to the specified style
 var observer222 = new MutationObserver(function (mutations) {
   mutations.forEach(function (mutation) {
