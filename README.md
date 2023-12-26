@@ -72,9 +72,9 @@ In the top right corner of the webpage, there is a button, with an arrow. Clicki
 
 ### Note
 
-In order to use the memory manager, you are required to have a Cohere API key. You can get one by signing up [here](https://cohere.com/). After that, you'll be redirected to the dashboard, where you can find your API key in the API keys section. Copy it, and paste it in the "Cohere API Key" input in the Memory Manager.
+In order to use the memory manager Auto-Generator, you are required to have a Cohere API key. You can get one by signing up [here](https://cohere.com/). After that, you'll be redirected to the dashboard, where you can find your API key in the API keys section. Copy it, and paste it in the "Cohere API Key" input in the Memory Manager.
 
-The API Key is totally free, and is not exposed to anyone, except you. We highly recommend you to not share your API key with anyone, as it can be used to use Cohere on your behalf.
+The API Key is totally **FREE**, and will **not** exposed to anyone, except you. We highly recommend you to not share your API key with anyone, as it can be used to use Cohere on your behalf.
 
 ## Legacy Chats
 
