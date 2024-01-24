@@ -1613,33 +1613,6 @@ if (localStorage.getItem("deleteGetCaiButtonEnabled") === "true") {
   deleteGetCaiButtonToggle.checked = false;
 }
 
-var br = document.createElement("br");
-settingsPanel.appendChild(br);
-
-// Create a toggle for Swapping inputs for the input field
-var swapInputsToggle = document.createElement("input");
-swapInputsToggle.type = "checkbox";
-swapInputsToggle.id = "swap-inputs-toggle";
-swapInputsToggle.style.marginRight = "5px";
-swapInputsToggle.checked = false; // Disabled by default
-settingsPanel.appendChild(swapInputsToggle);
-
-var swapInputsToggleLabel = document.createElement("label");
-swapInputsToggleLabel.htmlFor = "swap-inputs-toggle";
-swapInputsToggleLabel.textContent = "Swap Input Hotkeys";
-settingsPanel.appendChild(swapInputsToggleLabel);
-
-swapInputsToggle.addEventListener("change", function () {
-  localStorage.setItem("swapInputsEnabled", this.checked);
-  showMessage("Please reload the page for the changes to apply.");
-});
-
-if (localStorage.getItem("swapInputsEnabled") === "true") {
-  swapInputsToggle.checked = true;
-} else {
-  swapInputsToggle.checked = false;
-}
-
 // When there's a new mutation in <body>, get all 'swiper-no-swiping' divs, then their parent, and set the parent's style to the specified style
 var observer222 = new MutationObserver(function (mutations) {
   mutations.forEach(function (mutation) {
@@ -2760,48 +2733,6 @@ function ifthereisonedeleteit() {
     subtree: true,
   });
 }
-
-function toggleInputHotkeys() {
-  // This function grabs the input textarea and makes Shift+Enter send the message and Enter create a new line
-  var checkInterval;
-
-  function setupHotkeys() {
-    var input = document.getElementById("user-input");
-
-    // Remove existing event listeners
-    var clonedInput = input.cloneNode(true);
-    input.parentNode.replaceChild(clonedInput, input);
-    input = clonedInput;
-
-    input.addEventListener("keydown", function (e) {
-      if (e.shiftKey && e.keyCode === 13) {
-        document.getElementsByClassName("btn py-0")[0].click();
-      }
-      if (e.keyCode === 13) {
-        input.value += "\n";
-        var inputEvent = new Event("input", { bubbles: true });
-        input.dispatchEvent(inputEvent);
-      }
-    });
-
-    clearInterval(checkInterval); // Stop checking once the element is found
-  }
-
-  function checkInputExistence() {
-    var input = document.getElementById("user-input");
-    if (input) {
-      setupHotkeys();
-    }
-  }
-
-  // Start checking for the input element periodically
-  checkInterval = setInterval(checkInputExistence, 1000);
-}
-
-if (localStorage.getItem('swapInputsEnabled') === 'true') {
-  toggleInputHotkeys();
-}
-
 
 
 if (localStorage.getItem('deleteGetCaiButtonEnabled') === 'true') {
