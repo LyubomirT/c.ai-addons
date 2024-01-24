@@ -2763,12 +2763,20 @@ function ifthereisonedeleteit() {
 
 function toggleInputHotkeys() {
   // This function grabs the input textarea and makes Shift+Enter send the message and Enter create a new line
-  if (localStorage.getItem('swapInputsEnabled)') === 'true') {
+  var checkInterval;
+
+  function setupHotkeys() {
     var input = document.getElementById("user-input");
+
+    // Remove existing event listeners
+    var clonedInput = input.cloneNode(true);
+    input.parentNode.replaceChild(clonedInput, input);
+    input = clonedInput;
+
     input.addEventListener("keydown", function (e) {
       if (e.shiftKey && e.keyCode === 13) {
         e.preventDefault();
-        document.getElementById("send-button").click();
+        document.getElementsByClassName("btn py-0")[0].click();
       }
       if (e.keyCode === 13) {
         e.preventDefault();
@@ -2777,8 +2785,25 @@ function toggleInputHotkeys() {
         input.dispatchEvent(inputEvent);
       }
     });
+
+    clearInterval(checkInterval); // Stop checking once the element is found
   }
+
+  function checkInputExistence() {
+    var input = document.getElementById("user-input");
+    if (input) {
+      setupHotkeys();
+    }
+  }
+
+  // Start checking for the input element periodically
+  checkInterval = setInterval(checkInputExistence, 1000);
 }
+
+if (localStorage.getItem('swapInputsEnabled') === 'true') {
+  toggleInputHotkeys();
+}
+
 
 
 if (localStorage.getItem('deleteGetCaiButtonEnabled') === 'true') {
