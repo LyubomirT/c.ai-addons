@@ -2779,7 +2779,6 @@ function toggleInputHotkeys() {
         document.getElementsByClassName("btn py-0")[0].click();
       }
       if (e.keyCode === 13) {
-        e.preventDefault();
         input.value += "\n";
         var inputEvent = new Event("input", { bubbles: true });
         input.dispatchEvent(inputEvent);
