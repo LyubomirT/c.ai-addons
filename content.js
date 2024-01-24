@@ -1613,6 +1613,33 @@ if (localStorage.getItem("deleteGetCaiButtonEnabled") === "true") {
   deleteGetCaiButtonToggle.checked = false;
 }
 
+var br = document.createElement("br");
+settingsPanel.appendChild(br);
+
+// Create a toggle for Swapping inputs for the input field
+var swapInputsToggle = document.createElement("input");
+swapInputsToggle.type = "checkbox";
+swapInputsToggle.id = "swap-inputs-toggle";
+swapInputsToggle.style.marginRight = "5px";
+swapInputsToggle.checked = false; // Disabled by default
+settingsPanel.appendChild(swapInputsToggle);
+
+var swapInputsToggleLabel = document.createElement("label");
+swapInputsToggleLabel.htmlFor = "swap-inputs-toggle";
+swapInputsToggleLabel.textContent = "Swap Input Hotkeys";
+settingsPanel.appendChild(swapInputsToggleLabel);
+
+swapInputsToggle.addEventListener("change", function () {
+  localStorage.setItem("swapInputsEnabled", this.checked);
+  showMessage("Please reload the page for the changes to apply.");
+});
+
+if (localStorage.getItem("swapInputsEnabled") === "true") {
+  swapInputsToggle.checked = true;
+} else {
+  swapInputsToggle.checked = false;
+}
+
 // When there's a new mutation in <body>, get all 'swiper-no-swiping' divs, then their parent, and set the parent's style to the specified style
 var observer222 = new MutationObserver(function (mutations) {
   mutations.forEach(function (mutation) {
