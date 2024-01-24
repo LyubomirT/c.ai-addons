@@ -2775,7 +2775,6 @@ function toggleInputHotkeys() {
 
     input.addEventListener("keydown", function (e) {
       if (e.shiftKey && e.keyCode === 13) {
-        e.preventDefault();
         document.getElementsByClassName("btn py-0")[0].click();
       }
       if (e.keyCode === 13) {
