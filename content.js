@@ -2761,6 +2761,25 @@ function ifthereisonedeleteit() {
   });
 }
 
+function toggleInputHotkeys() {
+  // This function grabs the input textarea and makes Shift+Enter send the message and Enter create a new line
+  if (localStorage.getItem('swapInputsEnabled)') === 'true') {
+    var input = document.getElementById("user-input");
+    input.addEventListener("keydown", function (e) {
+      if (e.shiftKey && e.keyCode === 13) {
+        e.preventDefault();
+        document.getElementById("send-button").click();
+      }
+      if (e.keyCode === 13) {
+        e.preventDefault();
+        input.value += "\n";
+        var inputEvent = new Event("input", { bubbles: true });
+        input.dispatchEvent(inputEvent);
+      }
+    });
+  }
+}
+
 
 if (localStorage.getItem('deleteGetCaiButtonEnabled') === 'true') {
   ifthereisonedeleteit();
