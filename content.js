@@ -519,35 +519,6 @@ color: white;
     
     DIVFORTHEINSERTBUTTON.appendChild(apiKeyInput);
 
-    var debugButton = document.createElement("button");
-    debugButton.id = "debug-button";
-    debugButton.textContent = "Debug";
-    debugButton.style.backgroundImage =
-      "linear-gradient(to right, #00c6ff, #0072ff)";
-    debugButton.style.padding = "10px";
-    debugButton.style.borderRadius = "5px";
-    debugButton.style.border = "none";
-    debugButton.style.marginTop = "10px";
-    debugButton.style.width = "80%";
-    debugButton.style.color = "white";
-    debugButton.style.cursor = "pointer";
-    debugButton.style.color = "white";
-    debugButton.addEventListener("click", function () {
-      var data = getChatHistory();
-      console.warn(data);
-      var data = convertHistory(data);
-      // It returned a promise and we need to resolve it
-      var tempdata = "";
-      data.then(function (result) {
-        for (var i = 0; i < result.length; i++) {
-          tempdata += result[i] + "\n";
-        }
-        console.log(tempdata);
-      });
-    });
-
-    DIVFORTHEINSERTBUTTON.appendChild(debugButton);
-
     function convertToMemoryString(obj) {
       // Extract the summary from the object
       var summary = obj.summary;
