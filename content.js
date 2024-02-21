@@ -1368,132 +1368,24 @@ function initLegacy() {
 var checked = false;
 
 async function seekForMessagesToExportInChat2() {
-  var characterNameElement = document.querySelector(".chat2 > div > div > button + div > div > div:first-child");
-  var characterName = characterNameElement ? characterNameElement.textContent : "Unknown Character";
 
-  // Get all message divs
-  var messageDivs = document.querySelectorAll(".swiper-no-swiping");
+  // Use the similar algorithm to the one to scan for chat messages to send to the API
+  var overheredata = getChatHistory();
+  var yeahoverheredata = convertHistory(overheredata);
+  var overheredata = "";
 
-  // Initialize arrays to store character and user messages
-  var characterMessages = [];
-  var userMessages = [];
-  var userNames = [];
-
-  // Iterate through each message div
-  messageDivs.forEach(function (messageDiv, index) {
-    // Ignore messages that are not in the active slide
-    var parentSlide = messageDiv.closest(".swiper-slide");
-    if (parentSlide && !parentSlide.classList.contains("swiper-slide-active") || caughtOne) {
-      return;
+  yeahoverheredata.then(async function (result) {
+    for (var i = 0; i < result.length; i++) {
+      overheredata += result[i] + "\n";
     }
-
-    if (parentSlide && parentSlide.classList.contains("swiper-slide-active")) {
-      caughtOne = true;
-    }
-    
-    // Find the <p> elements inside the message div
-    var messageParagraphs = messageDiv.querySelectorAll("p");
-    var messageBlockquotes = messageDiv.querySelectorAll("blockquote > p");
-    var messageInlineCodes = messageDiv.querySelectorAll("code");
-    var messageUls = messageDiv.querySelectorAll("ul, ol");
-    
-    // Extract and store the text content of each <p> element
-    var messageText = Array.from(messageParagraphs).map(function (paragraph) {
-      // Handle special elements inside the message
-      var specialElements = messageDiv.querySelectorAll("ul, ol, pre, blockquote, code");
-      if (specialElements.length > 0) {
-        return Array.from(specialElements).map(function (element) {
-          if (element.type == "code") {
-            return element.textContent;
-          }
-          else if (element.type == "blockquote") {
-            console.log(element.childNodes[0].innerText);
-            return element.childNodes[0].innerText;
-          }
-          return element.textContent;
-        }).join("\n");
-      } else {
-        return paragraph.innerHTML;
-      }
-    }).join("\n");
-
-    // Handle blockquotes
-    if (messageBlockquotes.length > 0) {
-      for (var i = 0; i < messageBlockquotes.length; i++) {
-        messageText += "> " + messageBlockquotes[i].textContent + "\n";
-      }
-    }
-
-    // Handle inline codes
-    if (messageInlineCodes.length > 0) {
-      for (var i = 0; i < messageInlineCodes.length; i++) {
-        messageText += "`" + messageInlineCodes[i].textContent + "`";
-      }
-    }
-
-    // Handle lists
-    if (messageUls.length > 0) {
-      for (var i = 0; i < messageUls.length; i++) {
-        console.log('List:', messageUls[i]); // Debugging line
-        for (var j = 0; j < messageUls[i].childNodes.length; j++) {
-          console.log('List Item:', messageUls[i].childNodes[j]); // Debugging line
-          if (messageUls[i].childNodes[j].nodeType === 1) {
-            // Check if it's an element node
-            messageText += "- " + messageUls[i].childNodes[j].textContent.trim() + "\n";
-          }
-        }
-      }
-    }
-
-    messageText = messageText.replace("<strong>", "**").replace("</strong>", "**");
-    messageText = messageText.replace("<em>", "*").replace("</em>", "*");
-    messageText = messageText.replace("<h1>", "# ").replace("</h1>", "#" );
-    messageText = messageText.replace("<h2>", "## ").replace("</h2>", "## ");
-    messageText = messageText.replace("<h3>", "### ").replace("</h3>", "### ");
-    messageText = messageText.replace("<h4>", "#### ").replace("</h4>", "#### ");
-    messageText = messageText.replace("<h5>", "##### ").replace("</h5>", "##### ");
-    messageText = messageText.replace("<h6>", "###### ").replace("</h6>", "###### ");
-    
-    // Determine if the message is from the character or user
-    if (index % 2 === 0) {
-      characterMessages.push(messageText);
-    } else {
-      if (parentSlide && parentSlide.classList.contains("swiper-slide-active")) {
-        characterMessages.push(messageText);
-      } else {
-        // Get the sibling div which contains the username
-        var userNameDiv = messageDiv.previousElementSibling;
-        if (userNameDiv) {
-          userNames.push(userNameDiv.textContent.trim());
-        } else {
-          userNames.push("Unknown User");
-        }
-        userMessages.push(messageText);
-      }
-    }
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(overheredata));
+    element.setAttribute('download', "messages.txt");
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
   });
-
-  caughtOne = false;
-
-  console.log(characterName);
-
-  // Combine character and user messages
-  var organizedMessages = [];
-  for (var i = 0; i < characterMessages.length || i < userMessages.length; i++) {
-    if (characterMessages[i]) {
-      organizedMessages.push(`<<Character (Character Name = ${characterName}) Message Start>>\n\n${characterMessages[i]}\n\n<<Character Message End>>`);
-    }
-    if (userMessages[i]) {
-      organizedMessages.push(`<<User (User Name = ${userNames[i]}) Message Start>>\n\n${userMessages[i]}\n\n<<User Message End>>`);
-    }
-  }
-
-  // Display the summarized messages
-  var summaryText = organizedMessages.join("\n\n");
-
-  console.log(summaryText);
-
-  return summaryText;
 }
 
 async function seekForMessagesToExportInChat3() {
@@ -1952,19 +1844,7 @@ mutationObserverManipulationButtons = new MutationObserver(function (mutations) 
         `
         divForTheButton.appendChild(elementToAdd);
         elementToAdd.addEventListener("click", async function () {
-          // If it's a mobile device
-          if ('ontouchstart' in window || navigator.maxTouchPoints) {
-            dataToWriteToAFile = await seekForMessagesToExportInChat3();
-          } else {
-            dataToWriteToAFile = await seekForMessagesToExportInChat2();
-          }
-          var element = document.createElement('a');
-          element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(dataToWriteToAFile));
-          element.setAttribute('download', "messages.txt");
-          element.style.display = 'none';
-          document.body.appendChild(element);
-          element.click();
-          document.body.removeChild(element);
+          await seekForMessagesToExportInChat2();
         });
         doesitexist.insertAdjacentElement("beforebegin", divForTheButton);
         mutationObserverManipulationButtons.disconnect();
