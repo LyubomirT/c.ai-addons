@@ -575,7 +575,6 @@ color: white;
         // Set the global dctempdata variable to the result
         console.log(dctempdata);
         var nicetext = dctempdata;
-        console.warn(nicetext);
   
         // Check if the summaryText is less than 500 characters long
         if (nicetext.length < 500) {
