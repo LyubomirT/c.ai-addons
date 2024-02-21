@@ -1,5 +1,6 @@
 // content.js for character.ai
 var caughtOne = false;
+var dctempdata = "";
 
 function initMemoryManager() {
   if (localStorage.getItem("memoryManagerEnabled") === "true") {
@@ -517,6 +518,36 @@ color: white;
     }
     
     DIVFORTHEINSERTBUTTON.appendChild(apiKeyInput);
+
+    var debugButton = document.createElement("button");
+    debugButton.id = "debug-button";
+    debugButton.textContent = "Debug";
+    debugButton.style.backgroundImage =
+      "linear-gradient(to right, #00c6ff, #0072ff)";
+    debugButton.style.padding = "10px";
+    debugButton.style.borderRadius = "5px";
+    debugButton.style.border = "none";
+    debugButton.style.marginTop = "10px";
+    debugButton.style.width = "80%";
+    debugButton.style.color = "white";
+    debugButton.style.cursor = "pointer";
+    debugButton.style.color = "white";
+    debugButton.addEventListener("click", function () {
+      var data = getChatHistory();
+      console.warn(data);
+      var data = convertHistory(data);
+      // It returned a promise and we need to resolve it
+      var tempdata = "";
+      data.then(function (result) {
+        for (var i = 0; i < result.length; i++) {
+          tempdata += result[i] + "\n";
+        }
+        console.log(tempdata);
+      });
+    });
+
+    DIVFORTHEINSERTBUTTON.appendChild(debugButton);
+
     function convertToMemoryString(obj) {
       // Extract the summary from the object
       var summary = obj.summary;
@@ -531,6 +562,10 @@ color: white;
       lines.forEach(function (line) {
         // Remove the leading dash and any whitespace characters
         line = line.replace(/^-/, "").trim();
+        // Also try to remove any leading bullet points
+        line = line.replace(/^•/, "").trim();
+        // ...or any leading asterisks
+        line = line.replace(/^\*/, "").trim();
     
         // Add the line to the formattedLines array, enclosed in double quotes
         formattedLines.push(`"${line}"`);
@@ -554,177 +589,59 @@ color: white;
       }
       scanButton.textContent = "Scanning... (Might take a while)";
       scanButton.disabled = true;
-      // Check if the window.location.href contains "chat2"
-      if (window.location.href.includes("chat2")) {
-        scanChat2Messages();
-        return
-      }
-      // Get all message divs
-      var authorNameElement = document.querySelector(".msg-author-name");
       
-      // Check if the element exists and contains text
-      if (authorNameElement) {
-        var userName = authorNameElement.textContent;
-        console.log("User's name:", userName);
-      } else {
-        var userName = "Anonymous";
-        console.log("Author name element not found.");
-      }
-    
-      // Get the element with the class "chattitle p-0 pe-1 m-0"
-      var chatTitleElement = document.querySelector(".chattitle.p-0.pe-1.m-0");
-      var chatTitle;
-    
-      // Check if the element exists and contains text
-      if (chatTitleElement) {
-        var chatTitle = Array.from(chatTitleElement.childNodes)
-        .filter(node => node.nodeType === Node.TEXT_NODE)
-        .map(node => node.textContent)
-        .join('')
-        .trim();
-        console.log("Chat title:", chatTitle);
-      } else {
-        var chatTitle = "Unknown";
-        console.log("Chat title element not found.");
-      }
-    
-      var messageDivs = document.querySelectorAll(
-        ".msg.char-msg, .msg.user-msg"
-      );
-    
-      // Initialize arrays to store character and user messages
-      var characterMessages = [];
-      var userMessages = [];
-    
-      // Iterate through each message div
-      messageDivs.forEach(function (messageDiv) {
-        var parentSlide = messageDiv.closest(".swiper-slide");
-        if (parentSlide && !parentSlide.classList.contains("swiper-slide-active") || caughtOne) {
+      var ctempdata = "";
+
+      ctempdata = getChatHistory();
+
+      var ourdata = convertHistory(ctempdata);
+
+      // It returned a promise and we need to resolve it
+      ourdata.then(async function (result) {
+        for (var i = 0; i < result.length; i++) {
+          dctempdata += result[i] + "\n";
+        }
+        // Set the global dctempdata variable to the result
+        console.log(dctempdata);
+        var nicetext = dctempdata;
+        console.warn(nicetext);
+  
+        // Check if the summaryText is less than 500 characters long
+        if (nicetext.length < 500) {
+          alert("The chat is too short to scan.");
+          scanButton.textContent = "Generate Automatically";
+          scanButton.disabled = false;
           return;
         }
-
-        // Find the <p> elements inside the message div
-        var messageParagraphs = messageDiv.querySelectorAll("div > div > div > p");
-        var messageBlockquotes = messageDiv.querySelectorAll("div > div > div > blockquote > p");
-        var messageInlineCodes = messageDiv.querySelectorAll("div > div > div > p > div > div > code > span > span");
-        var messageUls = messageDiv.querySelectorAll("ul");
-
-        // Extract and store the text content of each <p> element
-        var messageText = Array.from(messageParagraphs).map(function (paragraph) {
-          // Handle special elements inside the message
-          var specialElements = messageDiv.querySelectorAll("ul, ol, pre, blockquote, code");
-          if (specialElements.length > 0) {
-            return Array.from(specialElements).map(function (element) {
-              if (element.tagName == "CODE") {
-                return element.textContent;
-              }
-              else if (element.tagName == "BLOCKQUOTE") {
-                console.log(element.childNodes[0].innerText);
-                return element.childNodes[0].innerText;
-              }
-            }).join("\n");
-          } else {
-            return paragraph.innerHTML;
-          }
-        }).join("\n");
-
-        // Handle blockquotes
-        if (messageBlockquotes.length > 0) {
-          for (var i = 0; i < messageBlockquotes.length; i++) {
-            messageText += "> " + messageBlockquotes[i].textContent + "\n";
-          }
-        }
-
-        // Handle inline codes
-        if (messageInlineCodes.length > 0) {
-          for (var i = 0; i < messageInlineCodes.length; i++) {
-            messageText += "`" + messageInlineCodes[i].textContent + "`";
-          }
-        }
-
-        // Handle lists
-        if (messageUls.length > 0) {
-          for (var i = 0; i < messageUls.length; i++) {
-            console.log('List:', messageUls[i]); // Debugging line
-            for (var j = 0; j < messageUls[i].childNodes.length; j++) {
-              console.log('List Item:', messageUls[i].childNodes[j]); // Debugging line
-              if (messageUls[i].childNodes[j].nodeType === 1) {
-                // Check if it's an element node
-                messageText += "- " + messageUls[i].childNodes[j].textContent.trim() + "\n";
-              }
-            }
-          }
-        }
-
-        messageText = messageText.replace("<strong>", "**").replace("</strong>", "**");
-        messageText = messageText.replace("<em>", "*").replace("</em>", "*");
-        messageText = messageText.replace("<h1>", "# ").replace("</h1>", "#" );
-        messageText = messageText.replace("<h2>", "## ").replace("</h2>", "## ");
-        messageText = messageText.replace("<h3>", "### ").replace("</h3>", "### ");
-        messageText = messageText.replace("<h4>", "#### ").replace("</h4>", "#### ");
-        messageText = messageText.replace("<h5>", "##### ").replace("</h5>", "##### ");
-        messageText = messageText.replace("<h6>", "###### ").replace("</h6>", "###### ");
-
-        // Check if the message is from the character or user
-        if (messageDiv.classList.contains("char-msg")) {
-          characterMessages.push(messageText);
-        } else {
-          userMessages.push(messageText);
-        }
+        
+        // Send a request to the API using fetch method
+        const response = await fetch('https://api.cohere.ai/v1/summarize', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKeyInput.value}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              text: nicetext,
+              length: 'auto',
+              format: 'bullets',
+              model: currentlySelectedModel,
+              additional_command: 'Extract facts and events from the conversation. Do not make up any information.',
+              temperature: 0.6
+            })
+         });
+         scanButton.textContent = "Generate Automatically";
+         scanButton.disabled = false;
+         if (!response.ok) {
+          alert("Something went wrong. Please try again.\n\n" + response.statusText);
+          return
+         }
+         const data = await response.json();
+         var summary = "";
+         summary = convertToMemoryString(data);
+         importMemoryString(summary);
+         console.log(data);
       });
-    
-      // Organize the messages as alternating character-user-character-user and so on
-      var organizedMessages = [];
-      var maxLength = Math.max(characterMessages.length, userMessages.length);
-      for (var i = 0; i < maxLength; i++) {
-        if (characterMessages[i]) {
-          organizedMessages.push(`<<Character (Character Name = ${chatTitle}) Message Start>>\n\n${characterMessages[i]}\n\n<<Character Message End>>`);
-        }
-        if (userMessages[i]) {
-          organizedMessages.push(`<<User (User Name = ${userName}) Message Start>>\n\n${userMessages[i]}\n\n<<User Message End>>`);
-        }
-      }
-    
-      // Display the summarized messages
-      var summaryText = organizedMessages.join("\n\n");
-
-      console.log(summaryText);
-
-      // Check if the summaryText is less than 500 characters long
-      if (summaryText.length < 500) {
-        alert("The chat is too short to scan.");
-        scanButton.textContent = "Generate Automatically";
-        scanButton.disabled = false;
-        return;
-      }
-      
-      // Send a request to the API using fetch method
-      const response = await fetch('https://api.cohere.ai/v1/summarize', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKeyInput.value}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            text: summaryText,
-            length: 'auto',
-            format: 'bullets',
-            model: currentlySelectedModel,
-            additional_command: 'Extract facts and events from the conversation. Do not make up any information.',
-            temperature: 0.6
-          })
-       });
-       scanButton.textContent = "Generate Automatically";
-       scanButton.disabled = false;
-       if (!response.ok) {
-        alert("Something went wrong. Please try again.");
-        return
-       }
-       const data = await response.json();
-       var summary = "";
-       summary = convertToMemoryString(data);
-       importMemoryString(summary);
-       console.log(data);
     }
 
     async function scanChat2Messages() {
@@ -2733,6 +2650,76 @@ function ifthereisonedeleteit() {
     subtree: true,
   });
 }
+
+async function getChatHistory() {
+  // Get the char ID from url params
+  let charID = new URLSearchParams(window.location.search).get("char");
+  if (!charID) alert("You need to be in a chat to use this feature.")
+
+  // Get user token to use it as Authorization header
+  let token = JSON.parse(localStorage.getItem("char_token")).value;
+  if (!token) alert("No authorization token found! Please login to Character AI and try again.");
+  let opt = {
+      headers: {
+          Authorization: `Token ${token}`,
+      },
+  };
+
+  // Send request to get chat information such as chat_id
+  let chatInfo = await (await fetch(`https://neo.character.ai/chats/recent/${charID}`, opt)).json();
+  if (!chatInfo) alert("Something went wrong. Either the chat data is corrupted or the chat ID is invalid. Please try again.")
+
+  let chatID = chatInfo.chats[0].chat_id;
+  // Send request to get the first newest turns (a chunk of messages) to get the next token
+  let recentHistory = await (await fetch(`https://neo.character.ai/turns/${chatID}`, opt)).json();
+  // Every turns will be stored here
+  let chatsHistory = [recentHistory];
+
+  // Get the nextToken
+  let nextToken = chatsHistory[chatsHistory.length - 1].meta.next_token;
+  while (nextToken) {
+      // Send request to get the next turns until the next token is null.
+      let history = await (await fetch(`https://neo.character.ai/turns/${chatID}?next_token=${nextToken}`, opt)).json();
+      chatsHistory.push(history);
+      nextToken = history.meta.next_token;
+  }
+
+  return chatsHistory;
+}
+
+async function convertHistory(data) {
+  // Extract turns array from the objects in data
+  let turns = [];
+  // Ensure data is resolved if it is a Promise
+  if (data instanceof Promise) {
+    data = await data;
+  }
+
+  for (let obj of data) {
+    if (obj.turns && Array.isArray(obj.turns)) {
+      turns.push(...obj.turns);
+    }
+  }
+
+  // Ensure turns is an array
+  if (!Array.isArray(turns)) {
+    alert("The chat history is corrupted. Please try again.\nCause: the turns object is not an array.");
+  }
+
+  // Reverse the array
+  turns.reverse();
+
+  let chats = [];
+
+  // Convert the data to a string of the author name and the message
+  turns.forEach((e) => {
+    chats.push(`<< Name: ${e.author.name} >>\n\n${e.candidates[0].raw_content}\n\n<< Message End >>\n\n`);
+  });
+
+  return chats;
+}
+
+
 
 
 if (localStorage.getItem('deleteGetCaiButtonEnabled') === 'true') {
