@@ -576,6 +576,8 @@ color: white;
         return;
       }
 
+      continueChatButton.textContent = "Continuing... (Might take a while, if it misunderstands the chat, please refresh the page and try again.)";
+
       var ourdata = convertHistory(ctempdata, returnUsername = true);
 
       // It returned a promise and we need to resolve it
@@ -593,6 +595,7 @@ color: white;
         // Check if the summaryText is less than 500 characters long
         if (nicetext.length < 500) {
           alert("The chat is too short to scan.");
+          continueChatButton.textContent = "Continue Chat";
           return;
         }
 
@@ -622,14 +625,15 @@ color: white;
           });
           if (!response.ok) {
             alert("Something went wrong. Please try again.\n\n" + response.statusText);
+            continueChatButton.textContent = "Continue Chat";
             return
           }
           const data = await response.json();
-          console.log(data);
           var summary = "";
           summary = data.generations[0].text;
-          console.log(data);
-          alert(summary);
+          // Insert the summarry into the chat input
+          alert("The suggested message is (copy-paste): " + summary);
+          continueChatButton.textContent = "Continue Chat";
       });
     }
   
