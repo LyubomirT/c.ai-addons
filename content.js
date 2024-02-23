@@ -631,10 +631,10 @@ color: white;
           const data = await response.json();
           var summary = "";
           summary = data.generations[0].text;
-          // Insert the summarry into the chat input
-          alert("The suggested message is (will be copied to your clipboard):\n\n" + summary);
-          navigator.clipboard.writeText(summary);
-          continueChatButton.textContent = "Continue Chat";
+          navigator.clipboard.writeText(summary).then(function() {
+            alert("The suggested message is (will be copied to your clipboard):\n\n" + summary);
+            continueChatButton.textContent = "Continue Chat";
+          });
       });
     }
   
