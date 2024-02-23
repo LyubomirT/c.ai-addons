@@ -558,7 +558,7 @@ color: white;
         alert("Please enter your Cohere API key. You can get one for free at https://cohere.com/");
         return;
       }
-      scanButton.textContent = "Scanning... (Might take a while)";
+      scanButton.textContent = "Scanning... (Might take a while, if it misunderstands the chat, please refresh the page and try again.)";
       scanButton.disabled = true;
       
       var ctempdata = "";
@@ -2063,6 +2063,8 @@ async function getChatHistory() {
   // Every turns will be stored here
   let chatsHistory = [recentHistory];
 
+  console.log(recentHistory);
+
   // Get the nextToken
   let nextToken = chatsHistory[chatsHistory.length - 1].meta.next_token;
   while (nextToken) {
@@ -2071,6 +2073,8 @@ async function getChatHistory() {
       chatsHistory.push(history);
       nextToken = history.meta.next_token;
   }
+
+  console.log(chatsHistory);
 
   return chatsHistory;
 }
