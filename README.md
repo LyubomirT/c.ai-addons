@@ -1,6 +1,9 @@
 # c.ai-addons
 Enhance your Character.ai experience with a set of useful features and tools to make your interactions smoother and more personalized. This extension is a collection of handy add-ons designed to empower your conversations and improve the user interface.
 
+> [!WARNING]
+> This extension may become deprecated soon due to the Redesign update of Character.AI. Maybe it will be updated to support the new UI, but it's not guaranteed. At the moment we're still waiting for the outcome of the update. Huge thanks to everyone who supported this project, and I'm sorry for the inconvenience.
+
 ## Installation
 1. Download the latest Manifest3-based release from the [releases page](https://github.com/LyubomirT/c.ai-addons/releases).
 2. Extract the archive.
