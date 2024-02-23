@@ -64,6 +64,10 @@ If you don't want to manually create a memory string, you can use the "Generate 
 
 You can also switch between the "Fast", "Small Nightly", and "Normal" models. Fast can save you some time, but it's not as accurate as the normal model, while the normal model is more accurate, but slower. Small Nigthly is currently the fastest model and relatively accurate, but it's not recommended to use it, as it's still in development by Cohere.
 
+### Suggest a Chat Continuation
+
+This new feature utilizes the "Generate" feature of the Cohere API to suggest a chat continuation. It's not 100% accurate, but sometimes it can actually provide creative and interesting suggestions. You can use it by clicking on the "Continue Chat" button. The process can sometimes be a bit slow, but it can be worth it. The configuration for this mode is the same as the one for the "Generate Automatically" mode, as it uses the same model and platform. However, you still need to have the Cohere API Key set up in the Memory Manager.
+
 ### Opening or Closing the Memory Manager
 
 In the top right corner of the webpage, there is a button, with an arrow. Clicking on it will open the memory manager, and clicking on it again will close it.
