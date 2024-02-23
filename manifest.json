@@ -18,7 +18,7 @@
     
     "content_scripts": [
       {
-        "matches": ["https://*.character.ai/*"],
+        "matches": ["https://*.character.ai/*", "https://character.ai/*"],
         "js": ["content.js"],
         "css": ["style.css"]
       }

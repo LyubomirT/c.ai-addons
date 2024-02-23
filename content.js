@@ -2208,7 +2208,12 @@ async function convertHistory(data, returnUsername = false) {
   return chats;
 }
 
-
+// If the website URL has "redesign=true" in the query string, then alert and return to beta.character.ai
+console.log(window.location.search);
+if (window.location.search.includes("redesign=true")) {
+  window.location.href = "https://beta.character.ai";
+  alert("Sadly, we don't support the new Character AI website yet. Please go back to the old website to use this extension.");
+}
 
 
 if (localStorage.getItem('deleteGetCaiButtonEnabled') === 'true') {
