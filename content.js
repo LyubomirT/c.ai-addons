@@ -483,6 +483,23 @@ color: white;
     scanButton.addEventListener("click", scanMessages);
     DIVFORTHEINSERTBUTTON.appendChild(scanButton);
 
+    var continueChatButton = document.createElement("button");
+    continueChatButton.id = "continue-chat-button";
+    continueChatButton.textContent = "Continue Chat";
+    continueChatButton.style.backgroundImage =
+      "linear-gradient(to right, #00c6ff, #0072ff)";
+    continueChatButton.style.padding = "10px";
+    continueChatButton.style.borderRadius = "5px";
+    continueChatButton.style.border = "none";
+    continueChatButton.style.marginTop = "10px";
+    continueChatButton.style.width = "80%";
+    continueChatButton.style.color = "white";
+    continueChatButton.style.cursor = "pointer";
+    continueChatButton.style.color = "white";
+    continueChatButton.addEventListener("click", continueChat);
+    DIVFORTHEINSERTBUTTON.appendChild(continueChatButton);
+
+
     // Add a new select element for choosing which model to use for auto-scanning
     var modelSelect = document.createElement("select");
     modelSelect.id = "model-select";
@@ -548,6 +565,75 @@ color: white;
       // Return the resulting memory string
       return memoryString;
     }
+
+    async function continueChat() {
+      var ctempdata = "";
+
+      ctempdata = getChatHistory();
+
+      if (apiKeyInput.value.trim() === "") {
+        alert("Please enter your Cohere API key. You can get one for free at https://cohere.com/");
+        return;
+      }
+
+      var ourdata = convertHistory(ctempdata, returnUsername = true);
+
+      // It returned a promise and we need to resolve it
+      ourdata.then(async function (result) {
+        // Now we get the list of messages AND the username, but they're in an object. The key for the list is "chats" and the key for the username is "username"
+        var username = result.username;
+        var result = result.chats;
+        for (var i = 0; i < result.length; i++) {
+          dctempdata += result[i] + "\n";
+        }
+        // Set the global dctempdata variable to the result
+        console.log(dctempdata);
+        var nicetext = dctempdata;
+
+        // Check if the summaryText is less than 500 characters long
+        if (nicetext.length < 500) {
+          alert("The chat is too short to scan.");
+          return;
+        }
+
+        evenbettertext = "You are a model for suggesting chat completions, your goal is to provide a new message the user can send to the other user, also supporting roleplays. The current conversation is:\n\n```\n";
+        evenbettertext += nicetext;
+        evenbettertext += "\n```";
+        evenbettertext += "\n\nProvide the next message the user \""
+        evenbettertext += username;
+        evenbettertext += "\" can send. Do not send any other content than the message. Do not include the enclosing tag. Do not surround the message with \"."
+
+        // Send a request to the API using fetch method
+        const response = await fetch('https://api.cohere.ai/v1/generate', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKeyInput.value}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              prompt: evenbettertext,
+              model: currentlySelectedModel,
+              temperature: 0.3,
+              max_tokens: 150,
+              k: 0,
+              stop_sequences: [],
+              return_likelihoods: "NONE"
+            })
+          });
+          if (!response.ok) {
+            alert("Something went wrong. Please try again.\n\n" + response.statusText);
+            return
+          }
+          const data = await response.json();
+          console.log(data);
+          var summary = "";
+          summary = data.generations[0].text;
+          console.log(data);
+          alert(summary);
+      });
+    }
+  
+
     
     
 
@@ -2079,7 +2165,7 @@ async function getChatHistory() {
   return chatsHistory;
 }
 
-async function convertHistory(data) {
+async function convertHistory(data, returnUsername = false) {
   // Extract turns array from the objects in data
   let turns = [];
   // Ensure data is resolved if it is a Promise
@@ -2108,6 +2194,12 @@ async function convertHistory(data) {
     chats.push(`<< Name: ${e.author.name} >>\n\n${e.candidates[0].raw_content}\n\n<< Message End >>\n\n`);
   });
 
+  // Grab the username of the second user in the chat
+  let username = turns[1].author.name;
+
+   if (returnUsername) {
+    return { chats, username };
+  }
   return chats;
 }
 
